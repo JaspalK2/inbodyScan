@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "services/auth-service/src/main.py", "use": "@vercel/python" },
+    { "src": "services/user-service/src/main.py", "use": "@vercel/python" },
+    { "src": "services/scan-service/src/main.py", "use": "@vercel/python" },
+    { "src": "services/analytics-service/src/main.py", "use": "@vercel/python" },
+    { "src": "services/recommendation-service/src/main.py", "use": "@vercel/python" },
+    { "src": "services/admin-service/src/main.py", "use": "@vercel/python" },
+    { "src": "frontend/package.json", "use": "@vercel/next" }
+  ],
+  "routes": [
+    { "src": "/api/auth/(.*)", "dest": "services/auth-service/src/main.py" },
+    { "src": "/api/users/(.*)", "dest": "services/user-service/src/main.py" },
+    { "src": "/api/scans/(.*)", "dest": "services/scan-service/src/main.py" },
+    { "src": "/api/analytics/(.*)", "dest": "services/analytics-service/src/main.py" },
+    { "src": "/api/recommendations/(.*)", "dest": "services/recommendation-service/src/main.py" },
+    { "src": "/api/admin/(.*)", "dest": "services/admin-service/src/main.py" },
+    { "src": "/(.*)", "dest": "frontend" }
+  ]
+}
