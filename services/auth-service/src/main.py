@@ -3,7 +3,7 @@ import os
 import sys
 
 # Allow imports from repo root (for shared/)
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", "..", ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
