@@ -13,6 +13,8 @@ fi
 
 set -a; source "$ENV_FILE"; set +a
 
+PYTHON="${PYTHON:-python3.13}"
+
 start_service() {
   local name=$1
   local port=$2
@@ -20,7 +22,7 @@ start_service() {
   echo "Starting $name on port $port..."
   cd "$dir"
   if [ ! -d ".venv" ]; then
-    python3 -m venv .venv
+    "$PYTHON" -m venv .venv
     .venv/bin/pip install -q --upgrade pip
     .venv/bin/pip install -q -r requirements.txt
   fi
