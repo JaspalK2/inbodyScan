@@ -4,15 +4,13 @@ import os
 import uuid
 from datetime import datetime, timedelta, timezone
 
+import bcrypt
 import jwt
-from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..models.user import User
 from ..models.refresh_token import RefreshToken
-
-_pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 JWT_SECRET = os.environ["JWT_SECRET_KEY"]
 JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
@@ -21,11 +19,11 @@ REFRESH_TOKEN_EXPIRE_DAYS = int(os.environ.get("REFRESH_TOKEN_EXPIRE_DAYS", "7")
 
 
 def hash_password(plain: str) -> str:
-    return _pwd_ctx.hash(plain)
+    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
 
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return _pwd_ctx.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode(), hashed.encode())
 
 
 def create_access_token(user_id: str, is_admin: bool) -> str:
