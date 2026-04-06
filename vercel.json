@@ -43,6 +43,6 @@
     { "src": "/api/analytics/(.*)", "dest": "/frontend/api/analytics/[...path]?path=$1" },
     { "src": "/api/recommendations/(.*)", "dest": "/frontend/api/recommendations/[...path]?path=$1" },
     { "src": "/api/admin/(.*)", "dest": "/frontend/api/admin/[...path]?path=$1" },
-    { "handle": "filesystem" }
+    { "src": "/(.*)", "dest": "/frontend/$1" }
   ]
 }
