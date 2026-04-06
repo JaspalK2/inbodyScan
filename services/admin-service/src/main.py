@@ -19,6 +19,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/api/admin/health")
+async def health_admin():
+    return {"status": "ok", "service": "admin"}
+
+
 app.include_router(admin_router)
 
 handler = Mangum(app, lifespan="off")

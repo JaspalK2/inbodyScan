@@ -8,13 +8,14 @@ from ..services.scan_service import (
     get_scans_for_user, get_metrics_for_scan, scan_date_exists,
 )
 from ..services.pdf_extractor import extract_metrics
-from ..storage.supabase_storage import upload_pdf, get_signed_url
+from ..services.csv_extractor import extract_from_csv
+from ..storage.supabase_storage import upload_pdf, upload_csv, get_signed_url
 from ..db.session import get_db
 from shared.python.auth_utils.dependencies import get_current_user_id
 
 router = APIRouter(prefix="/api/scans", tags=["scans"])
 
-MAX_PDF_SIZE = 10 * 1024 * 1024  # 10 MB
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
 @router.post("/upload", response_model=ScanWithMetrics, status_code=status.HTTP_201_CREATED)
@@ -28,7 +29,7 @@ async def upload_scan(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be a PDF")
 
     pdf_bytes = await file.read()
-    if len(pdf_bytes) > MAX_PDF_SIZE:
+    if len(pdf_bytes) > MAX_FILE_SIZE:
         raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="PDF exceeds 10 MB limit")
 
     if await scan_date_exists(session, user_id, scan_date):
@@ -42,6 +43,53 @@ async def upload_scan(
     metrics_dict = extract_metrics(pdf_bytes)
 
     scan = await create_scan(session, user_id, scan_date, storage_path)
+    metric_records = await save_metrics(session, scan.id, metrics_dict)
+
+    return ScanWithMetrics(
+        scan=ScanOut.model_validate(scan),
+        metrics=[MetricOut.model_validate(m) for m in metric_records],
+    )
+
+
+@router.post("/upload-csv", response_model=ScanWithMetrics, status_code=status.HTTP_201_CREATED)
+async def upload_scan_csv(
+    file: UploadFile = File(...),
+    scan_date: date = Form(None),
+    user_id: str = Depends(get_current_user_id),
+    session: AsyncSession = Depends(get_db),
+):
+    """
+    Accept an InBody CSV export file.
+    scan_date is optional — if the CSV contains a date column it is used automatically.
+    If neither source provides a date, the request is rejected.
+    """
+    content_type = file.content_type or ""
+    if not (content_type in ("text/csv", "application/csv", "application/vnd.ms-excel")
+            or (file.filename or "").lower().endswith(".csv")):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File must be a CSV")
+
+    csv_bytes = await file.read()
+    if len(csv_bytes) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="CSV exceeds 10 MB limit")
+
+    metrics_dict, csv_date_str = extract_from_csv(csv_bytes)
+
+    # Resolve scan date: form field → CSV-embedded date → today
+    resolved_date: date = (
+        scan_date
+        or (date.fromisoformat(csv_date_str) if csv_date_str else None)
+        or date.today()
+    )
+
+    if await scan_date_exists(session, user_id, resolved_date):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="A scan for this date already exists",
+            headers={"X-Error-Code": "duplicate_scan_date"},
+        )
+
+    storage_path = upload_csv(user_id, str(resolved_date), csv_bytes)
+    scan = await create_scan(session, user_id, resolved_date, storage_path)
     metric_records = await save_metrics(session, scan.id, metrics_dict)
 
     return ScanWithMetrics(

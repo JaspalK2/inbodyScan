@@ -15,8 +15,7 @@ from .models import scan, metric  # noqa: F401
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with _engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    # Tables are managed via Supabase / Alembic migrations — skip create_all
     yield
     await _engine.dispose()
 
@@ -31,6 +30,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/api/scans/health")
+async def health_scan():
+    return {"status": "ok", "service": "scan"}
+
 
 app.include_router(scans_router)
 

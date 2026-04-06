@@ -9,6 +9,9 @@ VALID_RESTRICTIONS = {
 }
 
 
+VALID_ACTIVITY_LEVELS = {"sedentary", "lightly_active", "moderately_active", "very_active", "extra_active"}
+
+
 class ProfileUpdate(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
@@ -16,6 +19,7 @@ class ProfileUpdate(BaseModel):
     height_cm: float | None = None
     weight_kg: float | None = None
     gender: Literal["male", "female", "other"] | None = None
+    activity_level: Literal["sedentary", "lightly_active", "moderately_active", "very_active", "extra_active"] | None = None
 
 
 class ProfileOut(BaseModel):
@@ -27,6 +31,7 @@ class ProfileOut(BaseModel):
     height_cm: float | None
     weight_kg: float | None
     gender: str | None
+    activity_level: str | None
 
     model_config = {"from_attributes": True}
 

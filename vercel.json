@@ -1,13 +1,84 @@
 {
   "version": 2,
+  "functions": {
+    "services/auth-service/src/main.py": { "runtime": "python3.12", "maxDuration": 15 },
+    "services/user-service/src/main.py": { "runtime": "python3.12", "maxDuration": 15 },
+    "services/scan-service/src/main.py": { "runtime": "python3.12", "maxDuration": 20 },
+    "services/analytics-service/src/main.py": { "runtime": "python3.12", "maxDuration": 15 },
+    "services/recommendation-service/src/main.py": { "runtime": "python3.12", "maxDuration": 30 },
+    "services/admin-service/src/main.py": { "runtime": "python3.12", "maxDuration": 15 }
+  },
   "builds": [
-    { "src": "services/auth-service/src/main.py", "use": "@vercel/python" },
-    { "src": "services/user-service/src/main.py", "use": "@vercel/python" },
-    { "src": "services/scan-service/src/main.py", "use": "@vercel/python" },
-    { "src": "services/analytics-service/src/main.py", "use": "@vercel/python" },
-    { "src": "services/recommendation-service/src/main.py", "use": "@vercel/python" },
-    { "src": "services/admin-service/src/main.py", "use": "@vercel/python" },
-    { "src": "frontend/package.json", "use": "@vercel/next" }
+    {
+      "src": "services/auth-service/src/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "services/auth-service/requirements.txt",
+          "services/auth-service/src/**",
+          "shared/**"
+        ]
+      }
+    },
+    {
+      "src": "services/user-service/src/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "services/user-service/requirements.txt",
+          "services/user-service/src/**",
+          "shared/**"
+        ]
+      }
+    },
+    {
+      "src": "services/scan-service/src/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "services/scan-service/requirements.txt",
+          "services/scan-service/src/**",
+          "shared/**"
+        ]
+      }
+    },
+    {
+      "src": "services/analytics-service/src/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "services/analytics-service/requirements.txt",
+          "services/analytics-service/src/**",
+          "shared/**"
+        ]
+      }
+    },
+    {
+      "src": "services/recommendation-service/src/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "services/recommendation-service/requirements.txt",
+          "services/recommendation-service/src/**",
+          "shared/**"
+        ]
+      }
+    },
+    {
+      "src": "services/admin-service/src/main.py",
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": [
+          "services/admin-service/requirements.txt",
+          "services/admin-service/src/**",
+          "shared/**"
+        ]
+      }
+    },
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/next"
+    }
   ],
   "routes": [
     { "src": "/api/auth/(.*)", "dest": "services/auth-service/src/main.py" },

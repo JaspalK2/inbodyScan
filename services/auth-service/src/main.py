@@ -16,15 +16,12 @@ from .db.session import _engine
 from shared.python.db_utils.session import Base
 
 # Import models so Alembic and create_all can find them
-from .models import user, refresh_token  # noqa: F401
+from .models import user, refresh_token, google_link_request  # noqa: F401
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create tables if they don't exist (idempotent)
-    async with _engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    # Seed initial admin if configured
+    # Tables are managed via Supabase / Alembic migrations — skip create_all
     await _seed_admin()
     yield
     await _engine.dispose()
@@ -61,6 +58,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/api/auth/health")
+async def health_auth():
+    return {"status": "ok", "service": "auth"}
+
 
 app.include_router(auth_router)
 app.include_router(admin_router)

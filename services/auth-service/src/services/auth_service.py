@@ -54,6 +54,54 @@ async def create_user(session: AsyncSession, username: str, email: str, password
     return user
 
 
+async def get_user_by_google_sub(session: AsyncSession, sub: str) -> User | None:
+    result = await session.execute(select(User).where(User.google_sub == sub))
+    return result.scalar_one_or_none()
+
+
+async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
+    result = await session.execute(select(User).where(User.email == email))
+    return result.scalar_one_or_none()
+
+
+async def create_google_user(session: AsyncSession, email: str, google_sub: str) -> User:
+    """Create a new user from a verified Google identity.
+
+    Username is auto-generated as google_<first 8 chars of sub>.
+    hashed_password is None — Google-only accounts have no password.
+    """
+    username = f"google_{google_sub[:8]}"
+    # Ensure username uniqueness by appending a suffix if needed
+    base_username = username
+    suffix = 1
+    while await get_user_by_username(session, username):
+        username = f"{base_username}_{suffix}"
+        suffix += 1
+
+    user = User(
+        id=str(uuid.uuid4()),
+        username=username,
+        email=email,
+        hashed_password=None,
+        google_sub=google_sub,
+    )
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return user
+
+
+async def link_google_account(session: AsyncSession, user_id: str, google_sub: str) -> User:
+    """Link a Google identity to an existing user account by setting google_sub."""
+    user = await get_user_by_id(session, user_id)
+    if user is None:
+        raise ValueError(f"User {user_id} not found")
+    user.google_sub = google_sub
+    await session.commit()
+    await session.refresh(user)
+    return user
+
+
 async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
     result = await session.execute(select(User).where(User.username == username))
     return result.scalar_one_or_none()
@@ -64,8 +112,11 @@ async def get_user_by_id(session: AsyncSession, user_id: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def store_refresh_token(session: AsyncSession, user_id: str, token: str) -> RefreshToken:
-    expires = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
+async def store_refresh_token(
+    session: AsyncSession, user_id: str, token: str, expire_days: int | None = None
+) -> RefreshToken:
+    days = expire_days if expire_days is not None else REFRESH_TOKEN_EXPIRE_DAYS
+    expires = datetime.now(timezone.utc) + timedelta(days=days)
     rt = RefreshToken(
         id=str(uuid.uuid4()),
         user_id=user_id,
