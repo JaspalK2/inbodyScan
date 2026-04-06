@@ -42,5 +42,20 @@ class UserOut(BaseModel):
     email: str
     is_admin: bool
     is_active: bool
+    google_sub: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class GoogleLoginRequest(BaseModel):
+    id_token: str
+
+
+class GoogleLinkResponse(BaseModel):
+    link_token: str
+    email: str
+    google_name: str | None = None
+
+
+class ConfirmLinkRequest(BaseModel):
+    link_token: str

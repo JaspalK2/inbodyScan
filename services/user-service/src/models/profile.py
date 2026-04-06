@@ -16,5 +16,6 @@ class UserProfile(Base):
     height_cm: Mapped[float | None] = mapped_column(Float)
     weight_kg: Mapped[float | None] = mapped_column(Float)
     gender: Mapped[str | None] = mapped_column(String(20))  # male, female, other
+    activity_level: Mapped[str | None] = mapped_column(String(30))  # sedentary, lightly_active, moderately_active, very_active, extra_active
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

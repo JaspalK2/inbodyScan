@@ -30,17 +30,17 @@ description: "Task list for InBody Scan Health Web Application"
 
 **Purpose**: Project skeleton, Vercel configuration, local dev tooling, and design system initialization. No Docker or Traefik — services run with `uvicorn` locally and deploy as Vercel serverless functions.
 
-- [ ] T001 Create full project directory structure: `services/{auth,user,scan,analytics,recommendation,admin}-service/`, `frontend/`, `shared/python/`, `scripts/` at repository root
-- [ ] T002 [P] Initialize each FastAPI service with `pyproject.toml` and `requirements.txt` (include `fastapi`, `mangum`, `sqlalchemy[asyncio]`, `asyncpg`, `alembic`, `pydantic[email]`, `pyjwt`, `passlib[bcrypt]`, `httpx`, `supabase`) for all 6 services under `services/`
-- [ ] T003 [P] Initialize Next.js 15 project with TypeScript, Tailwind CSS 3.x, and shadcn/ui in `frontend/` (`npx create-next-app@latest` with App Router + TypeScript + Tailwind)
-- [ ] T004 [P] Create `vercel.json` at repository root configuring: (a) Next.js framework build for `frontend/`, (b) Python serverless function rewrites routing `/api/auth/*` → `services/auth-service/src/main.py`, `/api/users/*` → `services/user-service/src/main.py`, `/api/scans/*` → `services/scan-service/src/main.py`, `/api/analytics/*` → `services/analytics-service/src/main.py`, `/api/recommendations/*` → `services/recommendation-service/src/main.py`, `/api/admin/*` → `services/admin-service/src/main.py`
-- [ ] T005 [P] Create `.env.example` with all required variables (with inline comments): `GOOGLE_API_KEY`, `USDA_API_KEY`, `JWT_SECRET_KEY`, `JWT_ALGORITHM=HS256`, `ACCESS_TOKEN_EXPIRE_MINUTES=15`, `REFRESH_TOKEN_EXPIRE_DAYS=7`, `INITIAL_ADMIN_USERNAME`, `INITIAL_ADMIN_PASSWORD`; per-service `DATABASE_URL=postgresql+asyncpg://postgres:[password]@[host]:5432/[db]`; `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_STORAGE_BUCKET=scan-pdfs`; `ALLOWED_ORIGINS=http://localhost:3000`
-- [ ] T006 [P] Create `shared/python/` as an installable package (`pyproject.toml`) containing `auth_utils/` (JWT encode/decode, get_current_user dependency) and `http_client/` (base async httpx client with auth header injection)
-- [ ] T007 [P] Configure Alembic for each of the 5 database-owning services (auth, user, scan, analytics, recommendation) — one `alembic/` directory per service with async-compatible `env.py` that reads `DATABASE_URL` env var (`postgresql+asyncpg://...` pointing to Supabase)
-- [ ] T008 [P] Create local dev run script `scripts/start-local.sh` that launches all 6 FastAPI services with `uvicorn` on ports 8001–8006 and prints per-service URLs
+- [x] T001 Create full project directory structure: `services/{auth,user,scan,analytics,recommendation,admin}-service/`, `frontend/`, `shared/python/`, `scripts/` at repository root
+- [x] T002 [P] Initialize each FastAPI service with `pyproject.toml` and `requirements.txt` (include `fastapi`, `mangum`, `sqlalchemy[asyncio]`, `asyncpg`, `alembic`, `pydantic[email]`, `pyjwt`, `passlib[bcrypt]`, `httpx`, `supabase`) for all 6 services under `services/`
+- [x] T003 [P] Initialize Next.js 15 project with TypeScript, Tailwind CSS 3.x, and shadcn/ui in `frontend/` (`npx create-next-app@latest` with App Router + TypeScript + Tailwind)
+- [x] T004 [P] Create `vercel.json` at repository root configuring: (a) Next.js framework build for `frontend/`, (b) Python serverless function rewrites routing `/api/auth/*` → `services/auth-service/src/main.py`, `/api/users/*` → `services/user-service/src/main.py`, `/api/scans/*` → `services/scan-service/src/main.py`, `/api/analytics/*` → `services/analytics-service/src/main.py`, `/api/recommendations/*` → `services/recommendation-service/src/main.py`, `/api/admin/*` → `services/admin-service/src/main.py`
+- [x] T005 [P] Create `.env.example` with all required variables (with inline comments): `GOOGLE_API_KEY`, `USDA_API_KEY`, `JWT_SECRET_KEY`, `JWT_ALGORITHM=HS256`, `ACCESS_TOKEN_EXPIRE_MINUTES=15`, `REFRESH_TOKEN_EXPIRE_DAYS=7`, `INITIAL_ADMIN_USERNAME`, `INITIAL_ADMIN_PASSWORD`; per-service `DATABASE_URL=postgresql+asyncpg://postgres:[password]@[host]:5432/[db]`; `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_STORAGE_BUCKET=scan-pdfs`; `ALLOWED_ORIGINS=http://localhost:3000`
+- [x] T006 [P] Create `shared/python/` as an installable package (`pyproject.toml`) containing `auth_utils/` (JWT encode/decode, get_current_user dependency) and `db_utils/` (async session factory with NullPool + uuid4 statement names for Supabase pgbouncer compatibility)
+- [ ] T007 [P] Configure Alembic for each of the 5 database-owning services — skipped: tables created directly in Supabase via asyncpg migration scripts; Alembic setup deferred to future
+- [x] T008 [P] Create local dev run script `scripts/start-local.sh` that launches all 6 FastAPI services with `uvicorn` on ports 8001–8006 and prints per-service URLs
 - [ ] T009 [P] Configure linting and formatting: `ruff` + `mypy` for all Python services (shared `pyproject.toml` root config); ESLint + TypeScript strict mode for `frontend/`
-- [ ] T010 Configure Option D glassmorphism design theme in `frontend/tailwind.config.ts` (tokens: bg `#0D1117`→`#1A0A2E`, card `rgba(255,255,255,0.05)` + backdrop-blur, primary `#A855F7`, secondary `#06B6D4`, font Geist) and `frontend/src/styles/globals.css` (CSS variables + Tailwind base)
-- [ ] T011 [P] Install Geist font (MIT) and shadcn/ui chart components (Recharts-based) in `frontend/`: `npm install geist` and initialize shadcn CLI with chart component
+- [x] T010 Configure glassmorphism design theme in `frontend/tailwind.config.ts` and `frontend/app/globals.css` (CSS variables + Tailwind base)
+- [x] T011 [P] Install Geist font (MIT) and shadcn/ui chart components (Recharts-based) in `frontend/`
 
 ---
 
@@ -48,17 +48,17 @@ description: "Task list for InBody Scan Health Web Application"
 
 **Purpose**: Shared infrastructure patterns that ALL user stories depend on. No user story work can begin until this phase is complete.
 
-- [ ] T012 Create SQLAlchemy 2.0 async session factory in `shared/python/auth_utils/database.py` — async engine from `DATABASE_URL` env var (`postgresql+asyncpg://...` pointing to Supabase in all environments), `AsyncSession` dependency for FastAPI route injection, reused across all 5 DB services
+- [x] T012 Create SQLAlchemy 2.0 async session factory in `shared/python/db_utils/session.py` — async engine with `NullPool` + UUID-based prepared statement names for Supabase pgbouncer transaction-mode compatibility, `AsyncSession` dependency for FastAPI route injection, reused across all 5 DB services
 - [ ] T013 [P] Create `BaseModel` SQLAlchemy mixin (id UUID PK auto-generated, created_at UTC datetime, updated_at UTC auto-updated) in `shared/python/auth_utils/base_model.py`
-- [ ] T014 [P] Implement JWT access token encode/decode (HS256, configurable expiry) and refresh token utilities in `shared/python/auth_utils/jwt.py` using PyJWT 2.x
-- [ ] T015 [P] Implement bcrypt password hashing (`hash_password`, `verify_password`) using passlib[bcrypt] in `services/auth-service/src/core/security.py`
-- [ ] T016 Implement `get_current_user` FastAPI dependency (extracts and validates JWT from `Authorization: Bearer` header, returns `{user_id, username, role}`) in `shared/python/auth_utils/dependencies.py` — used by all 5 non-auth services
-- [ ] T017 [P] Create `require_role("admin")` FastAPI dependency (wraps `get_current_user`, raises 403 if role ≠ admin) in `shared/python/auth_utils/dependencies.py`
+- [x] T014 [P] Implement JWT access token encode/decode (HS256, configurable expiry) and refresh token utilities in `shared/python/auth_utils/` using PyJWT 2.x
+- [x] T015 [P] Implement bcrypt password hashing (`hash_password`, `verify_password`) in `services/auth-service/src/services/auth_service.py`
+- [x] T016 Implement `get_current_user_id` FastAPI dependency (extracts and validates JWT from `Authorization: Bearer` header, returns user_id) in `shared/python/auth_utils/dependencies.py` — used by all 5 non-auth services
+- [x] T017 [P] Create `require_admin` FastAPI dependency in `services/admin-service/src/dependencies.py` (raises 403 if role ≠ admin)
 - [ ] T018 [P] Implement base async HTTP client in `shared/python/http_client/base_client.py` using httpx: configurable base URL per service, automatic Bearer token injection for internal calls, structured error handling
-- [ ] T019 [P] Add `handler = Mangum(app)` entry point to each of the 6 FastAPI `main.py` files so Vercel can invoke the ASGI app as a serverless function; add `mangum` to each service's `requirements.txt`
-- [ ] T020 [P] Configure pytest + pytest-asyncio for each service with `conftest.py` providing: async test client, isolated Supabase test schema (or `pytest-postgresql` ephemeral instance) for DB setup/teardown, and mock JWT token factory
+- [x] T019 [P] Add `handler = Mangum(app)` entry point to each of the 6 FastAPI `main.py` files so Vercel can invoke the ASGI app as a serverless function; `mangum` added to each service's `requirements.txt`
+- [ ] T020 [P] Configure pytest + pytest-asyncio for each service with `conftest.py` providing: async test client, isolated Supabase test schema for DB setup/teardown, and mock JWT token factory
 - [ ] T021 [P] Configure Vitest for frontend in `frontend/vitest.config.ts` with jsdom environment and React Testing Library
-- [ ] T022 Configure Playwright in `frontend/playwright.config.ts` with base URL `http://localhost:3000` (local `next dev` stack) and create `frontend/tests/e2e/` directory with shared fixture for authenticated sessions (calls local uvicorn services)
+- [ ] T022 Configure Playwright in `frontend/playwright.config.ts` with base URL `http://localhost:3000` and create `frontend/tests/e2e/` directory with shared fixture for authenticated sessions
 - [ ] T023 [P] Create sample InBody scan PDF test fixtures in `services/scan-service/tests/fixtures/` — at minimum one valid InBody PDF and one invalid/corrupt PDF for parser testing
 
 **Checkpoint**: Foundation ready — all user story implementations can now begin in parallel.
@@ -83,19 +83,19 @@ description: "Task list for InBody Scan Health Web Application"
 
 ### Implementation for User Story 1
 
-- [ ] T032 [P] [US1] Create `User` SQLAlchemy model (id UUID PK, username VARCHAR UNIQUE, password_hash, role ENUM, is_active BOOL, created_at, updated_at) in `services/auth-service/src/models/user.py`
-- [ ] T033 [P] [US1] Create `RefreshToken` SQLAlchemy model (id UUID PK, user_id UUID indexed, token_hash VARCHAR UNIQUE, expires_at, revoked BOOL) in `services/auth-service/src/models/refresh_token.py`
-- [ ] T034 [US1] Generate Alembic migration for `users` and `refresh_tokens` tables in `services/auth-service/alembic/versions/`
-- [ ] T035 [P] [US1] Create `UserRepository` (get_by_username, get_by_id, create, update_active_status) in `services/auth-service/src/repositories/user_repository.py`
-- [ ] T036 [P] [US1] Create `TokenRepository` (create_refresh_token, get_by_hash, revoke_token, revoke_all_for_user) in `services/auth-service/src/repositories/token_repository.py`
-- [ ] T037 [US1] Implement `AuthService` (login: verify password → issue access+refresh tokens; logout: revoke token; refresh: roll refresh token; verify: decode JWT) in `services/auth-service/src/services/auth_service.py`
-- [ ] T038 [P] [US1] Create Pydantic schemas (LoginRequest, LoginResponse, TokenResponse, UserIdentity) in `services/auth-service/src/schemas/auth.py`
-- [ ] T039 [US1] Implement auth router (POST `/login`, `/logout`, `/refresh`, GET `/me`, internal POST `/internal/auth/verify`) in `services/auth-service/src/routers/auth_router.py`
-- [ ] T040 [US1] Create first-boot admin seeder (reads `INITIAL_ADMIN_USERNAME` + `INITIAL_ADMIN_PASSWORD` env vars, creates admin account if no users exist) in `services/auth-service/src/core/seeder.py` — called from FastAPI lifespan
-- [ ] T041 [US1] Bootstrap auth-service FastAPI app with CORS middleware, lifespan (DB init + seeder), and router registration in `services/auth-service/src/main.py`
-- [ ] T042 [P] [US1] Implement login page UI (glassmorphism card, username/password form, error state, loading state) using shadcn/ui Form + Input in `frontend/src/app/(auth)/login/page.tsx`
-- [ ] T043 [P] [US1] Implement auth API client (login POST, logout POST, refresh POST, getMe GET) in `frontend/src/lib/api/auth.ts`
-- [ ] T044 [US1] Implement Next.js route protection middleware (redirect unauthenticated to `/login`, redirect admin to `/admin`, redirect regular users away from `/admin`) in `frontend/src/middleware.ts`
+- [x] T032 [P] [US1] Create `User` SQLAlchemy model (id UUID PK, username VARCHAR UNIQUE, hashed_password, is_admin BOOL, created_at) in `services/auth-service/src/models/user.py`
+- [x] T033 [P] [US1] Create `RefreshToken` SQLAlchemy model (id UUID PK, user_id UUID indexed, token_hash VARCHAR UNIQUE, expires_at) in `services/auth-service/src/models/refresh_token.py`
+- [ ] T034 [US1] Generate Alembic migration for `users` and `refresh_tokens` tables — skipped: tables created directly in Supabase
+- [ ] T035 [P] [US1] Create `UserRepository` — skipped: repository pattern not used; service calls SQLAlchemy directly
+- [ ] T036 [P] [US1] Create `TokenRepository` — skipped: repository pattern not used; service calls SQLAlchemy directly
+- [x] T037 [US1] Implement `AuthService` (login: verify password → issue access+refresh tokens; logout: revoke token; refresh: roll refresh token) in `services/auth-service/src/services/auth_service.py`
+- [x] T038 [P] [US1] Create Pydantic schemas (LoginRequest, LoginResponse, RegisterRequest, MeResponse) in `services/auth-service/src/schemas/auth.py`
+- [x] T039 [US1] Implement auth router (POST `/api/auth/login`, `/api/auth/register`, `/api/auth/refresh`, `/api/auth/logout`, GET `/api/auth/me`) in `services/auth-service/src/routers/auth.py`
+- [x] T040 [US1] Create first-boot admin seeder (reads `INITIAL_ADMIN_USERNAME` + `INITIAL_ADMIN_PASSWORD` env vars, creates admin account if no users exist) in `services/auth-service/src/core/seeder.py` — called from FastAPI lifespan
+- [x] T041 [US1] Bootstrap auth-service FastAPI app with CORS middleware, lifespan (seeder), and router registration in `services/auth-service/src/main.py`
+- [x] T042 [P] [US1] Implement login page UI (glassmorphism card, username/password form, error state, loading state) in `frontend/app/(auth)/login/page.tsx`
+- [x] T043 [P] [US1] Implement auth API client (login, logout, refresh, register, getMe) in `frontend/lib/api.ts`
+- [x] T044 [US1] Implement Next.js route protection middleware (redirect unauthenticated to `/login`, redirect admin to `/admin`, redirect regular users away from `/admin`) in `frontend/middleware.ts`
 
 **Checkpoint**: User Story 1 fully functional — login, logout, token refresh, and route protection working independently.
 
@@ -112,29 +112,29 @@ description: "Task list for InBody Scan Health Web Application"
 - [ ] T045 [P] [US2] Unit test: `InBodyParser.parse(pdf_bytes)` extracts all 24 standard metric keys from fixture PDF with correct values in `services/scan-service/tests/unit/test_inbody_parser.py`
 - [ ] T046 [P] [US2] Unit test: parser returns partial results (not empty) when optional fields are missing from PDF in `services/scan-service/tests/unit/test_inbody_parser.py`
 - [ ] T047 [P] [US2] Unit test: parser raises `ExtractionError` (not silent failure) on non-InBody PDF in `services/scan-service/tests/unit/test_inbody_parser.py`
-- [ ] T048 [P] [US2] Integration test: `POST /scans/upload` with valid PDF returns 202 + `scan_id` + `extraction_status: pending` in `services/scan-service/tests/integration/test_scan_router.py`
-- [ ] T049 [P] [US2] Integration test: `POST /scans/upload` with same `scan_date` as existing scan returns 409 with correct error message in `services/scan-service/tests/integration/test_scan_router.py`
-- [ ] T050 [P] [US2] Integration test: `GET /scans/{id}` after successful extraction returns all stored metrics in `services/scan-service/tests/integration/test_scan_router.py`
-- [ ] T051 [P] [US2] Integration test: `DELETE /scans/{id}` removes scan; same ID returns 404 afterward in `services/scan-service/tests/integration/test_scan_router.py`
+- [ ] T048 [P] [US2] Integration test: `POST /api/scans/upload` with valid PDF returns 201 + scan record + metrics in `services/scan-service/tests/integration/test_scan_router.py`
+- [ ] T049 [P] [US2] Integration test: `POST /api/scans/upload` with same `scan_date` as existing scan returns 409 in `services/scan-service/tests/integration/test_scan_router.py`
+- [ ] T050 [P] [US2] Integration test: `GET /api/scans/{id}` returns scan with all stored metrics in `services/scan-service/tests/integration/test_scan_router.py`
+- [ ] T051 [P] [US2] Integration test: CSV upload auto-detects date from file and returns 201 in `services/scan-service/tests/integration/test_scan_router.py`
 
 ### Implementation for User Story 2
 
-- [ ] T052 [P] [US2] Create `InBodyScan` SQLAlchemy model (id UUID PK, user_id UUID indexed, scan_date DATE, upload_date DATETIME, pdf_filename, pdf_storage_path, extraction_status ENUM, extraction_error TEXT nullable, raw_extraction_json TEXT nullable) in `services/scan-service/src/models/scan.py`
-- [ ] T053 [P] [US2] Create `ScanMetric` SQLAlchemy model (id UUID PK, scan_id UUID indexed, user_id UUID indexed, metric_key VARCHAR, metric_value FLOAT, unit VARCHAR) in `services/scan-service/src/models/scan_metric.py`
-- [ ] T054 [US2] Generate Alembic migration for `inbody_scans` and `scan_metrics` tables with unique constraint on `(user_id, scan_date)` in `services/scan-service/alembic/versions/`
-- [ ] T055 [P] [US2] Create `ScanRepository` (create, get_by_id_for_user, list_for_user ordered by scan_date DESC, update_extraction_status, delete_for_user; enforce unique user+scan_date) in `services/scan-service/src/repositories/scan_repository.py`
-- [ ] T056 [P] [US2] Create `ScanMetricRepository` (bulk_create, get_by_scan_id, get_by_user_and_metric_key) in `services/scan-service/src/repositories/metric_repository.py`
-- [ ] T057 [US2] Implement `InBodyParser` using pdfplumber to extract all 24 standard metric keys (body_fat_percentage, skeletal_muscle_mass_kg, body_mass_index, total_body_water_l, visceral_fat_level, body_weight_kg, protein_kg, minerals_kg, body_fat_mass_kg, fat_free_mass_kg, segmental muscle/fat for 5 body regions, basal_metabolic_rate_kcal, intracellular/extracellular water, ecw_tbw_ratio) in `services/scan-service/src/parsers/inbody_parser.py`
-- [ ] T058 [US2] Implement synchronous extraction handler (`async def extract_and_save`) — calls InBodyParser, bulk-saves ScanMetrics, updates scan status to success/failed, triggers profile auto-populate via user-service client; invoked directly inside `POST /scans/upload` in `services/scan-service/src/services/extraction_handler.py`
-- [ ] T059 [P] [US2] Create Pydantic schemas (ScanUploadResponse, ScanListItem, ScanDetail, ScanStatusResponse, MetricItem) in `services/scan-service/src/schemas/scan.py`
-- [ ] T060 [US2] Implement `ScanService` (upload: store PDF, create scan record, call extraction_handler synchronously, return completed scan with metrics; list; get; delete) in `services/scan-service/src/services/scan_service.py`
-- [ ] T061 [US2] Implement scan router (POST `/upload` multipart, GET `/`, GET `/{id}`, GET `/{id}/status`, DELETE `/{id}`) with `get_current_user` dependency on all routes in `services/scan-service/src/routers/scan_router.py`
-- [ ] T062 [US2] Bootstrap scan-service FastAPI app with DB init, `get_current_user` middleware, and `handler = Mangum(app)` for Vercel in `services/scan-service/src/main.py`
-- [ ] T063 [P] [US2] Implement `ScanUpload` component (drag-and-drop PDF zone, loading spinner during upload, success/error state on response — no polling required) using shadcn/ui in `frontend/src/components/scans/ScanUpload.tsx`
-- [ ] T064 [P] [US2] Implement `ScanCard` component (scan date, extraction status badge, metric count summary) in `frontend/src/components/scans/ScanCard.tsx`
-- [ ] T065 [P] [US2] Implement scan API client (uploadScan, listScans, getScan, getScanStatus, deleteScan) in `frontend/src/lib/api/scans.ts`
-- [ ] T066 [P] [US2] Create TanStack Query hooks (useScans, useUploadScan mutation with loading/error state, useDeleteScan) in `frontend/src/lib/hooks/useScans.ts`
-- [ ] T067 [US2] Implement scans page (upload zone + scan list with status badges) in `frontend/src/app/(app)/scans/page.tsx`
+- [x] T052 [P] [US2] Create `InBodyScan` SQLAlchemy model (id UUID PK, user_id UUID indexed, scan_date DATE UNIQUE per user, storage_path, created_at) in `services/scan-service/src/models/scan.py`
+- [x] T053 [P] [US2] Create `ScanMetric` SQLAlchemy model (id UUID PK, scan_id UUID FK, metric_key VARCHAR, metric_value FLOAT, created_at) in `services/scan-service/src/models/metric.py`
+- [ ] T054 [US2] Generate Alembic migration — skipped: tables created directly in Supabase
+- [ ] T055 [P] [US2] Create `ScanRepository` — skipped: repository pattern not used
+- [ ] T056 [P] [US2] Create `ScanMetricRepository` — skipped: repository pattern not used
+- [x] T057 [US2] Implement `InBodyParser` using pdfplumber to extract all 24 standard metric keys in `services/scan-service/src/services/pdf_extractor.py`
+- [x] T058 [US2] Implement CSV extractor with full InBody CSV format support: 14-digit timestamps, lb→kg/kJ→kcal conversions, BOM handling, tabular and key-value layouts in `services/scan-service/src/services/csv_extractor.py`
+- [x] T059 [P] [US2] Create Pydantic schemas (ScanOut, ScanWithMetrics, MetricOut) in `services/scan-service/src/schemas/scan.py`
+- [x] T060 [US2] Implement scan service (create_scan, save_metrics, get_scan_by_id, get_scans_for_user, scan_date_exists) in `services/scan-service/src/services/scan_service.py`
+- [x] T061 [US2] Implement scan router (POST `/api/scans/upload`, POST `/api/scans/upload-csv`, GET `/api/scans/`, GET `/api/scans/{id}`, GET `/api/scans/{id}/download-url`) in `services/scan-service/src/routers/scans.py`
+- [x] T062 [US2] Bootstrap scan-service FastAPI app with CORS, lifespan, and `handler = Mangum(app)` in `services/scan-service/src/main.py`
+- [x] T063 [P] [US2] Implement scan upload component (PDF drag-and-drop + CSV upload, loading state, success/error feedback) in `frontend/app/(app)/scans/page.tsx`
+- [x] T064 [P] [US2] Implement scan card/list component (scan date, metric count) in `frontend/app/(app)/scans/page.tsx`
+- [x] T065 [P] [US2] Implement scan API client (upload, uploadCsv, list, get, downloadUrl) in `frontend/lib/api.ts`
+- [x] T066 [P] [US2] Create TanStack Query hooks for scans using `@tanstack/react-query` in recommendations and dashboard pages
+- [x] T067 [US2] Implement scans page (upload zone + scan history list) in `frontend/app/(app)/scans/page.tsx`
 
 **Checkpoint**: User Story 2 fully functional — upload, async extraction, status polling, and scan history all work independently.
 
@@ -150,24 +150,24 @@ description: "Task list for InBody Scan Health Web Application"
 
 - [ ] T068 [P] [US3] Unit test: `DeltaService.compute_deltas()` returns correct `delta`, `current`, `previous`, and `direction` for all metrics in `services/analytics-service/tests/unit/test_delta_service.py`
 - [ ] T069 [P] [US3] Unit test: `direction` resolves to `improved` when body_fat_percentage decreases for goal `lose_body_fat`, and `declined` when it increases in `services/analytics-service/tests/unit/test_delta_service.py`
-- [ ] T070 [P] [US3] Integration test: `GET /analytics/dashboard` with two scans returns correct delta structure with `current_scan_id`, `previous_scan_id`, and all metric deltas in `services/analytics-service/tests/integration/test_analytics_router.py`
-- [ ] T071 [P] [US3] Integration test: `GET /analytics/dashboard` with zero scans returns 204 in `services/analytics-service/tests/integration/test_analytics_router.py`
-- [ ] T072 [P] [US3] E2E test: dashboard page loads for user with two scans and shows at least 5 metric cards with delta values and direction arrows in `frontend/tests/e2e/test_dashboard.spec.ts`
+- [ ] T070 [P] [US3] Integration test: `GET /api/analytics/dashboard` with two scans returns correct delta structure in `services/analytics-service/tests/integration/test_analytics_router.py`
+- [ ] T071 [P] [US3] Integration test: `GET /api/analytics/dashboard` with zero scans returns 204 in `services/analytics-service/tests/integration/test_analytics_router.py`
+- [ ] T072 [P] [US3] E2E test: dashboard page loads for user with two scans and shows metric cards with delta values in `frontend/tests/e2e/test_dashboard.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T073 [P] [US3] Create `DashboardCache` SQLAlchemy model (id UUID PK, user_id UUID UNIQUE, current_scan_id UUID, previous_scan_id UUID, delta_json TEXT, generated_at DATETIME) in `services/analytics-service/src/models/dashboard_cache.py`
-- [ ] T074 [US3] Generate Alembic migration for `dashboard_cache` table in `services/analytics-service/alembic/versions/`
-- [ ] T075 [P] [US3] Create internal scan-service HTTP client (get_latest_two_scans_for_user, get_scan_metrics) in `services/analytics-service/src/clients/scan_client.py`
-- [ ] T076 [P] [US3] Create internal user-service HTTP client (get_active_goal_for_user) in `services/analytics-service/src/clients/user_client.py`
-- [ ] T077 [US3] Implement `DeltaService` (fetch 2 latest scans via scan_client, fetch active goal via user_client, compute per-metric deltas, determine `direction` based on goal type, cache result) in `services/analytics-service/src/services/delta_service.py`
-- [ ] T078 [P] [US3] Create Pydantic schemas (DashboardResponse, MetricDelta) in `services/analytics-service/src/schemas/dashboard.py`
-- [ ] T079 [US3] Implement analytics router `GET /analytics/dashboard` endpoint in `services/analytics-service/src/routers/analytics_router.py`
-- [ ] T080 [US3] Bootstrap analytics-service FastAPI app in `services/analytics-service/src/main.py`
-- [ ] T081 [P] [US3] Implement `MetricDeltaCard` component (metric name, current value, previous value, delta with sign, directional arrow icon colored by direction: green/red/gray) in `frontend/src/components/dashboard/MetricDeltaCard.tsx`
-- [ ] T082 [P] [US3] Implement `DashboardGrid` component (responsive grid of MetricDeltaCards, scan date header, empty/single-scan states) in `frontend/src/components/dashboard/DashboardGrid.tsx`
-- [ ] T083 [P] [US3] Implement analytics API client (getDashboard) in `frontend/src/lib/api/analytics.ts`
-- [ ] T084 [US3] Implement dashboard Server Component page (fetch dashboard data server-side, render DashboardGrid with Suspense boundary) in `frontend/src/app/(app)/dashboard/page.tsx`
+- [x] T073 [P] [US3] Create `AnalyticsDashboardCache` SQLAlchemy model (id UUID PK, user_id UUID UNIQUE, dashboard_json TEXT, generated_at DATETIME) in `services/analytics-service/src/models/dashboard_cache.py`
+- [ ] T074 [US3] Generate Alembic migration — skipped: table created directly in Supabase
+- [ ] T075 [P] [US3] Create internal scan-service HTTP client — not needed: analytics-service queries scan DB directly via shared session
+- [ ] T076 [P] [US3] Create internal user-service HTTP client — not needed: analytics-service queries user DB directly via shared session
+- [x] T077 [US3] Implement dashboard service (fetch 2 latest scans + metrics, compute per-metric deltas, determine direction based on goal type) in `services/analytics-service/src/services/analytics_service.py`
+- [x] T078 [P] [US3] Create Pydantic schemas (DashboardOut, MetricDelta, ScanSummary) in `services/analytics-service/src/schemas/analytics.py`
+- [x] T079 [US3] Implement analytics router `GET /api/analytics/dashboard` endpoint in `services/analytics-service/src/routers/analytics.py`
+- [x] T080 [US3] Bootstrap analytics-service FastAPI app in `services/analytics-service/src/main.py`
+- [x] T081 [P] [US3] Implement metric delta card component (metric name, current/previous value, delta with sign, directional arrow colored by direction) in `frontend/app/(app)/dashboard/page.tsx`
+- [x] T082 [P] [US3] Implement dashboard grid (responsive grid of delta cards, scan date header, empty/single-scan states) in `frontend/app/(app)/dashboard/page.tsx`
+- [x] T083 [P] [US3] Implement analytics API client (getDashboard) in `frontend/lib/api.ts`
+- [x] T084 [US3] Implement dashboard page with TanStack Query, metric delta cards, and all scan states in `frontend/app/(app)/dashboard/page.tsx`
 
 **Checkpoint**: User Story 3 fully functional — dashboard comparison renders correctly for all scan count states.
 
@@ -181,21 +181,21 @@ description: "Task list for InBody Scan Health Web Application"
 
 ### Tests for User Story 4 ⚠️ Write and verify these FAIL before implementing
 
-- [ ] T085 [P] [US4] Integration test: `GET /analytics/metrics` returns list of available metric keys with scan counts in `services/analytics-service/tests/integration/test_analytics_router.py`
-- [ ] T086 [P] [US4] Integration test: `GET /analytics/metrics/body_fat_percentage/history` returns time-series with correct dates and values in `services/analytics-service/tests/integration/test_analytics_router.py`
-- [ ] T087 [P] [US4] Unit test (Vitest): `transformToRechartsLine()` produces correct `[{date, value}]` shape for Recharts LineChart in `frontend/src/lib/utils/chartTransformers.test.ts`
-- [ ] T088 [P] [US4] E2E test: metrics page with 3+ scans renders LineChart, DonutChart, and BarChart all visible and non-empty in `frontend/tests/e2e/test_metrics.spec.ts`
+- [ ] T085 [P] [US4] Integration test: `GET /api/analytics/metrics` returns list of available metric keys in `services/analytics-service/tests/integration/test_analytics_router.py`
+- [ ] T086 [P] [US4] Integration test: `GET /api/analytics/metrics/body_fat_percentage/history` returns time-series in `services/analytics-service/tests/integration/test_analytics_router.py`
+- [ ] T087 [P] [US4] Unit test (Vitest): chart transformer utilities produce correct shapes for Recharts in `frontend/lib/utils/chartTransformers.test.ts`
+- [ ] T088 [P] [US4] E2E test: metrics page with 3+ scans renders all chart types in `frontend/tests/e2e/test_metrics.spec.ts`
 
 ### Implementation for User Story 4
 
-- [ ] T089 [US4] Implement `MetricsHistoryService` (list available metric keys for user from scan-service, get time-series for a specific metric key) in `services/analytics-service/src/services/metrics_service.py`
-- [ ] T090 [US4] Add metrics endpoints to analytics router (`GET /analytics/metrics`, `GET /analytics/metrics/{metric_key}/history`) in `services/analytics-service/src/routers/analytics_router.py`
-- [ ] T091 [P] [US4] Implement `TrendLineChart` component (Recharts LineChart with glassmorphism card wrapper, date x-axis, value y-axis, tooltip showing exact value + date) in `frontend/src/components/charts/TrendLineChart.tsx`
-- [ ] T092 [P] [US4] Implement `CompositionDonutChart` component (Recharts PieChart/RadialBarChart showing fat mass %, muscle mass %, water % breakdown) in `frontend/src/components/charts/CompositionDonutChart.tsx`
-- [ ] T093 [P] [US4] Implement `SegmentalBarChart` component (Recharts BarChart showing muscle/fat mass per body region: right arm, left arm, trunk, right leg, left leg) in `frontend/src/components/charts/SegmentalBarChart.tsx`
-- [ ] T094 [P] [US4] Implement chart data transformer utilities (transformToRechartsLine, transformToRechartsDonut, transformToRechartsSegmental) in `frontend/src/lib/utils/chartTransformers.ts`
-- [ ] T095 [P] [US4] Create TanStack Query hooks (useAvailableMetrics, useMetricHistory) in `frontend/src/lib/hooks/useMetrics.ts`
-- [ ] T096 [US4] Implement metrics page with metric selector tabs, all three chart types, multi-scan placeholders for insufficient data in `frontend/src/app/(app)/metrics/page.tsx`
+- [x] T089 [US4] Implement metrics history service (list metric keys, get time-series per metric) in `services/analytics-service/src/services/analytics_service.py`
+- [x] T090 [US4] Add metrics endpoints (`GET /api/analytics/metrics`, `GET /api/analytics/metrics/{metric_key}/history`) to analytics router
+- [x] T091 [P] [US4] Implement `TrendLineChart` component (Recharts LineChart, glassmorphism card, date x-axis, tooltip) in `frontend/app/(app)/metrics/page.tsx`
+- [x] T092 [P] [US4] Implement `CompositionDonutChart` component (Recharts PieChart showing fat/muscle/water breakdown) in `frontend/app/(app)/metrics/page.tsx`
+- [x] T093 [P] [US4] Implement `SegmentalBarChart` component (Recharts BarChart for muscle/fat per body region) in `frontend/app/(app)/metrics/page.tsx`
+- [x] T094 [P] [US4] Implement chart data transformers in `frontend/lib/chartTransformers.ts`
+- [x] T095 [P] [US4] Implement analytics API client (getDashboard, getMetrics, getMetricHistory) in `frontend/lib/api.ts`
+- [x] T096 [US4] Implement metrics page with metric selector tabs, all three chart types, and insufficient-data placeholders in `frontend/app/(app)/metrics/page.tsx`
 
 **Checkpoint**: User Story 4 fully functional — all chart types render with correct data and interactive tooltips.
 
@@ -209,29 +209,27 @@ description: "Task list for InBody Scan Health Web Application"
 
 ### Tests for User Story 5 ⚠️ Write and verify these FAIL before implementing
 
-- [ ] T097 [P] [US5] Integration test: `GET /users/me/profile` returns null fields for new user, populated fields after update in `services/user-service/tests/integration/test_user_router.py`
-- [ ] T098 [P] [US5] Integration test: `PUT /users/me/goals` deactivates previous goal (sets is_active=false) and creates new active goal in `services/user-service/tests/integration/test_user_router.py`
-- [ ] T099 [P] [US5] Integration test: `PUT /users/me/goals` with `lose_body_fat` for user profile with BMI < 18.5 returns 200 with `warning` field populated in `services/user-service/tests/integration/test_user_router.py`
-- [ ] T100 [P] [US5] Integration test: `POST /users/me/restrictions` with duplicate non-custom type returns 409 in `services/user-service/tests/integration/test_user_router.py`
-- [ ] T101 [P] [US5] Integration test: `DELETE /users/me/restrictions/{id}` removes restriction; re-fetching list no longer contains it in `services/user-service/tests/integration/test_user_router.py`
-- [ ] T102 [P] [US5] E2E test: profile page saves dietary restrictions and health goal; values persist after page reload in `frontend/tests/e2e/test_profile.spec.ts`
+- [ ] T097 [P] [US5] Integration test: `GET /api/users/me/profile` returns null fields for new user, populated fields after update in `services/user-service/tests/integration/test_user_router.py`
+- [ ] T098 [P] [US5] Integration test: `PUT /api/users/me/goals` deactivates previous goal and creates new active goal in `services/user-service/tests/integration/test_user_router.py`
+- [ ] T099 [P] [US5] Integration test: goal conflict check returns warning when BMI < 18.5 + lose_body_fat goal in `services/user-service/tests/integration/test_user_router.py`
+- [ ] T100 [P] [US5] Integration test: duplicate dietary restriction returns 409 in `services/user-service/tests/integration/test_user_router.py`
+- [ ] T101 [P] [US5] Integration test: `DELETE /api/users/me/restrictions/{id}` removes restriction in `services/user-service/tests/integration/test_user_router.py`
+- [ ] T102 [P] [US5] E2E test: profile page saves restrictions and goal; values persist after page reload in `frontend/tests/e2e/test_profile.spec.ts`
 
 ### Implementation for User Story 5
 
-- [ ] T103 [P] [US5] Create `UserProfile` SQLAlchemy model (id UUID PK, user_id UUID UNIQUE indexed, age INT nullable, biological_sex ENUM nullable, height_cm FLOAT nullable, weight_kg FLOAT nullable, updated_at DATETIME) in `services/user-service/src/models/user_profile.py`
-- [ ] T104 [P] [US5] Create `HealthGoal` SQLAlchemy model (id UUID PK, user_id UUID indexed, goal_type ENUM, is_active BOOL default true, created_at DATETIME; composite index on user_id + is_active) in `services/user-service/src/models/health_goal.py`
-- [ ] T105 [P] [US5] Create `DietaryRestriction` SQLAlchemy model (id UUID PK, user_id UUID indexed, restriction_type ENUM, custom_value VARCHAR nullable, created_at DATETIME; unique constraint on user_id + restriction_type for non-custom types) in `services/user-service/src/models/dietary_restriction.py`
-- [ ] T106 [US5] Generate Alembic migration for `user_profiles`, `health_goals`, `dietary_restrictions` tables in `services/user-service/alembic/versions/`
-- [ ] T107 [P] [US5] Create `UserProfileRepository` (get_or_create_for_user, update, auto_populate_from_scan) in `services/user-service/src/repositories/profile_repository.py`
-- [ ] T108 [P] [US5] Create `HealthGoalRepository` (get_active_for_user, create_and_deactivate_previous, list_for_user) in `services/user-service/src/repositories/goal_repository.py`
-- [ ] T109 [P] [US5] Create `DietaryRestrictionRepository` (list_for_user, create, delete_for_user; enforce unique non-custom constraint) in `services/user-service/src/repositories/restriction_repository.py`
-- [ ] T110 [US5] Implement `UserService` (profile CRUD; goal set with active-goal deactivation; goal conflict check: BMI < 18.5 + lose_body_fat, BMI > 35 + gain_muscle_mass → return warning; restriction management) in `services/user-service/src/services/user_service.py`
-- [ ] T111 [P] [US5] Create Pydantic schemas (UserProfileResponse, UpdateProfileRequest, HealthGoalResponse, SetGoalRequest, SetGoalResponse with optional `warning`, DietaryRestrictionResponse, AddRestrictionRequest) in `services/user-service/src/schemas/`
-- [ ] T112 [US5] Implement user router (GET/PUT `/users/me/profile`, GET/PUT `/users/me/goals`, GET/POST `/users/me/restrictions`, DELETE `/users/me/restrictions/{id}`) in `services/user-service/src/routers/user_router.py`
-- [ ] T113 [US5] Bootstrap user-service FastAPI app in `services/user-service/src/main.py`
-- [ ] T114 [P] [US5] Implement `ProfileForm` component (age, sex, height, weight fields; goal selector; dietary restriction multi-select with custom input; inline warning banner for goal conflicts) using shadcn/ui Form, Select, Badge in `frontend/src/components/profile/ProfileForm.tsx`
-- [ ] T115 [P] [US5] Implement user API client (getProfile, updateProfile, getGoal, setGoal, getRestrictions, addRestriction, deleteRestriction) in `frontend/src/lib/api/users.ts`
-- [ ] T116 [US5] Implement profile page (Server Component load, client-side ProfileForm with TanStack Query mutations, toast on save) in `frontend/src/app/(app)/profile/page.tsx`
+- [x] T103 [P] [US5] Create `UserProfile` SQLAlchemy model (user_id UUID PK, age, gender, height_cm, weight_kg, updated_at) in `services/user-service/src/models/user_profile.py`
+- [x] T104 [P] [US5] Create `HealthGoal` SQLAlchemy model (id UUID PK, user_id UUID indexed, goal_type VARCHAR, is_active BOOL, created_at) in `services/user-service/src/models/health_goal.py`
+- [x] T105 [P] [US5] Create `DietaryRestriction` SQLAlchemy model (id UUID PK, user_id UUID indexed, restriction VARCHAR) in `services/user-service/src/models/dietary_restriction.py`
+- [ ] T106 [US5] Generate Alembic migration — skipped: tables created directly in Supabase
+- [ ] T107-T109 [US5] Repositories — skipped: repository pattern not used; service calls SQLAlchemy directly
+- [x] T110 [US5] Implement `UserService` (profile CRUD; goal set with deactivation; restriction management) in `services/user-service/src/services/user_service.py`
+- [x] T111 [P] [US5] Create Pydantic schemas (ProfileOut, ProfileUpdate, GoalOut, GoalCreate, RestrictionOut, RestrictionCreate) in `services/user-service/src/schemas/user.py`
+- [x] T112 [US5] Implement user router (GET/PUT `/api/users/me/profile`, GET/PUT `/api/users/me/goal`, GET/POST `/api/users/me/restrictions`, DELETE `/api/users/me/restrictions/{id}`) in `services/user-service/src/routers/users.py`
+- [x] T113 [US5] Bootstrap user-service FastAPI app in `services/user-service/src/main.py`
+- [x] T114 [P] [US5] Implement profile form component (age, gender, height, weight, goal selector, dietary restrictions multi-select) in `frontend/app/(app)/profile/page.tsx`
+- [x] T115 [P] [US5] Implement user API client (getProfile, updateProfile, getGoal, setGoal, getRestrictions, addRestriction, deleteRestriction) in `frontend/lib/api.ts`
+- [x] T116 [US5] Implement profile page with TanStack Query mutations and toast notifications in `frontend/app/(app)/profile/page.tsx`
 
 **Checkpoint**: User Story 5 fully functional — profile, goals, restrictions, and conflict warnings all work independently.
 
@@ -245,36 +243,35 @@ description: "Task list for InBody Scan Health Web Application"
 
 ### Tests for User Story 6 ⚠️ Write and verify these FAIL before implementing
 
-- [ ] T117 [P] [US6] Unit test: `DietPromptBuilder.build()` for vegetarian user includes "vegetarian" restriction and excludes PII (no names, no UUIDs) in `services/recommendation-service/tests/unit/test_diet_prompt_builder.py`
-- [ ] T118 [P] [US6] Unit test: `DietPromptBuilder.build()` includes USDA nutritional context for at least 3 relevant foods in `services/recommendation-service/tests/unit/test_diet_prompt_builder.py`
-- [ ] T119 [P] [US6] Unit test: USDA cache lookup returns correct `calories_per_100g` and `protein_g_per_100g` for a seeded food in `services/recommendation-service/tests/unit/test_usda_cache.py`
-- [ ] T120 [P] [US6] Integration test: `POST /recommendations/diet/generate` with complete user profile returns 202 + `recommendation_id` + `status: pending` in `services/recommendation-service/tests/integration/test_diet_router.py`
-- [ ] T121 [P] [US6] Integration test: `POST /recommendations/diet/generate` without active goal returns 400 in `services/recommendation-service/tests/integration/test_diet_router.py`
-- [ ] T122 [P] [US6] Integration test: `GET /recommendations/diet/latest` after completed job returns response with `daily_targets`, `micronutrients` (min 6 nutrients), and `meal_suggestions` in `services/recommendation-service/tests/integration/test_diet_router.py`
-- [ ] T123 [P] [US6] Integration test: `GET /recommendations/diet/history` returns list of past recommendations ordered by generated_at DESC in `services/recommendation-service/tests/integration/test_diet_router.py`
-- [ ] T124 [P] [US6] E2E test: diet recommendations page generates plan, displays macros table and micronutrients with % daily value, history tab shows past recommendations in `frontend/tests/e2e/test_diet_recommendation.spec.ts`
+- [ ] T117 [P] [US6] Unit test: `PromptBuilder.build_diet_prompt()` for vegetarian user includes restriction and excludes PII in `services/recommendation-service/tests/unit/test_prompt_builder.py`
+- [ ] T118 [P] [US6] Unit test: prompt builder includes USDA nutritional context in `services/recommendation-service/tests/unit/test_prompt_builder.py`
+- [ ] T119 [P] [US6] Unit test: `MacroCalculator.calculate()` returns correct targets for given body composition + goal in `services/recommendation-service/tests/unit/test_macro_calculator.py`
+- [ ] T120 [P] [US6] Integration test: `POST /api/recommendations/diet/generate` returns 201 + recommendation in `services/recommendation-service/tests/integration/test_recommendations_router.py`
+- [ ] T121 [P] [US6] Integration test: diet generation without active scan returns 400 in `services/recommendation-service/tests/integration/test_recommendations_router.py`
+- [ ] T122 [P] [US6] Integration test: `GET /api/recommendations/diet` returns list of past recommendations in `services/recommendation-service/tests/integration/test_recommendations_router.py`
+- [ ] T123 [P] [US6] Integration test: `GET /api/recommendations/food/search?q=chicken` returns USDA food results in `services/recommendation-service/tests/integration/test_recommendations_router.py`
+- [ ] T124 [P] [US6] E2E test: recommendations page generates diet plan, displays macro targets, USDA food search works in `frontend/tests/e2e/test_recommendations.spec.ts`
 
 ### Implementation for User Story 6
 
-- [ ] T125 [P] [US6] Create `DietRecommendation` SQLAlchemy model (id UUID PK, user_id UUID indexed, scan_id UUID, goal_type ENUM, generated_at DATETIME, daily_calories_kcal FLOAT, protein_g FLOAT, carbohydrates_g FLOAT, fat_g FLOAT, fiber_g FLOAT, micronutrients_json TEXT, meal_suggestions_json TEXT, dietary_restrictions_applied TEXT, llm_model_used VARCHAR, llm_prompt_version VARCHAR) in `services/recommendation-service/src/models/diet_recommendation.py`
-- [ ] T126 [P] [US6] Create `NutritionalFood` SQLAlchemy model (id UUID PK, fdc_id INT UNIQUE, food_name VARCHAR, all macro fields per 100g, nutrients_json TEXT, boolean flags for restrictions: is_vegetarian, is_vegan, contains_eggs, contains_dairy, contains_gluten, contains_nuts, contains_shellfish, contains_fish, last_synced_at DATETIME) in `services/recommendation-service/src/models/nutritional_food.py`
-- [ ] T127 [US6] Generate Alembic migration for `diet_recommendations` and `nutritional_foods` tables in `services/recommendation-service/alembic/versions/`
-- [ ] T128 [P] [US6] Create `DietRecommendationRepository` (create, get_latest_for_user, list_for_user ordered by generated_at DESC, get_by_id_for_user) in `services/recommendation-service/src/repositories/diet_recommendation_repository.py`
-- [ ] T129 [P] [US6] Create `NutritionalFoodRepository` (get_by_fdc_id, search_by_name, get_restriction_compliant_foods) in `services/recommendation-service/src/repositories/nutritional_food_repository.py`
-- [ ] T130 [US6] Implement `LLMClient` abstract base class with `generate(prompt: str) -> str` method in `services/recommendation-service/src/llm/client.py`
-- [ ] T131 [US6] Implement `GeminiClient` extending `LLMClient` using `google-generativeai` SDK (gemini-2.0-flash model, structured JSON output mode, retry on 429/503) in `services/recommendation-service/src/llm/gemini_client.py`
-- [ ] T132 [US6] Implement diet prompt template v1 (constructs structured prompt from: scan metrics dict, goal_type, restriction list, USDA nutritional context subset; no PII included) in `services/recommendation-service/src/llm/prompt_templates/diet_v1.py`
-- [ ] T133 [US6] Implement USDA FoodData Central sync script (fetch top 500 foods by nutrient completeness, parse macros + 11 micronutrients, classify restriction flags, upsert to NutritionalFood cache) in `services/recommendation-service/src/usda/sync_usda.py`
-- [ ] T134 [US6] Implement `DietRecommendationService` (validate preconditions: active scan + active goal; build prompt using DietPromptBuilder; call GeminiClient; parse JSON response; validate all required nutrient fields present; save DietRecommendation) in `services/recommendation-service/src/services/diet_service.py`
-- [ ] T135 [US6] Implement `POST /recommendations/diet/generate` as a synchronous async endpoint that calls `DietRecommendationService.generate()` directly and returns the completed recommendation in the response (no background task); add 60-second FastAPI route timeout guard in `services/recommendation-service/src/routers/diet_router.py`
-- [ ] T136 [P] [US6] Create Pydantic schemas (DietGenerateResponse, DietStatusResponse, DietRecommendationDetail with nested DailyTargets and MicronutrientDetail, DietHistoryItem) in `services/recommendation-service/src/schemas/diet.py`
-- [ ] T137 [US6] Implement diet recommendation router (POST `/recommendations/diet/generate`, GET `/recommendations/diet/status/{id}`, GET `/recommendations/diet/latest`, GET `/recommendations/diet/history`) in `services/recommendation-service/src/routers/diet_router.py`
-- [ ] T138 [US6] Bootstrap recommendation-service FastAPI app with DB init, USDA cache sync on startup (if cache empty), all routers registered, and `handler = Mangum(app)` for Vercel in `services/recommendation-service/src/main.py`
-- [ ] T139 [P] [US6] Implement `MacroNutrientTable` component (protein/carbs/fat/fiber with grams and % daily value progress bars) in `frontend/src/components/recommendations/MacroNutrientTable.tsx`
-- [ ] T140 [P] [US6] Implement `MicroNutrientGrid` component (vitamin D, B12, C, A, E; iron, calcium, potassium, magnesium, zinc, sodium — each with target, unit, % daily value) in `frontend/src/components/recommendations/MicroNutrientGrid.tsx`
-- [ ] T141 [P] [US6] Implement `MealSuggestionList` component (meal name, description, approx calories + protein per meal) in `frontend/src/components/recommendations/MealSuggestionList.tsx`
-- [ ] T142 [P] [US6] Implement recommendation API client (generateDietRecommendation, getDietStatus, getLatestDietRecommendation, getDietHistory) in `frontend/src/lib/api/recommendations.ts`
-- [ ] T143 [US6] Implement diet recommendations page (generate button → loading spinner during synchronous HTTP request → renders recommendation on success → error state with retry button on timeout/failure; history list tab shows past recommendations) in `frontend/src/app/(app)/recommendations/diet/page.tsx`
+- [x] T125 [P] [US6] Create `DietRecommendation` SQLAlchemy model (id UUID PK, user_id UUID indexed, scan_id UUID, goal_type VARCHAR, llm_response TEXT, structured_plan TEXT, edited_plan TEXT nullable, created_at DATETIME) in `services/recommendation-service/src/models/diet_recommendation.py`
+- [x] T126 [P] [US6] Create `NutritionalFood` SQLAlchemy model (id UUID PK, fdc_id INT UNIQUE, food_name VARCHAR, macro fields per 100g, nutrients_json TEXT) in `services/recommendation-service/src/models/nutritional_food.py`
+- [ ] T127 [US6] Generate Alembic migration — skipped: tables created directly in Supabase
+- [ ] T128-T129 [US6] Repositories — skipped: repository pattern not used
+- [x] T130 [US6] Implement `LLMClient` abstract base class with `generate(prompt: str) -> str` in `services/recommendation-service/src/llm/gemini_client.py`
+- [x] T131 [US6] Implement `GeminiClient` using `google-generativeai` SDK (gemini-2.0-flash, JSON mode, markdown-fence stripping fix) in `services/recommendation-service/src/llm/gemini_client.py`
+- [x] T132 [US6] Implement diet and workout prompt builders in `services/recommendation-service/src/services/prompt_builder.py`
+- [x] T133 [US6] Implement USDA FoodData Central food search (async httpx calls to public API, no local cache needed) in `services/recommendation-service/src/services/food_search.py`
+- [x] T134 [US6] Implement `MacroCalculator` using Mifflin-St Jeor BMR formula, goal-based TDEE multiplier, macro split in `services/recommendation-service/src/services/macro_calculator.py`
+- [x] T135 [US6] Implement `POST /api/recommendations/diet/generate` synchronous endpoint returning completed recommendation in `services/recommendation-service/src/routers/recommendations.py`
+- [x] T136 [P] [US6] Create complete recommendation schemas (MacroRequest/Out, FoodResultOut, DietRecommendationOut with edited_plan, GenerateDietRequest) in `services/recommendation-service/src/schemas/recommendation.py`
+- [x] T137 [US6] Implement diet endpoints (POST `/diet/generate`, PATCH `/diet/{id}`, GET `/diet`) in `services/recommendation-service/src/routers/recommendations.py`
+- [x] T138 [US6] Bootstrap recommendation-service FastAPI app with all model imports and `handler = Mangum(app)` in `services/recommendation-service/src/main.py`
+- [x] T139 [P] [US6] Implement macro targets display (stat cards for protein/carbs/fat/calories) in `frontend/app/(app)/recommendations/page.tsx`
+- [x] T140 [P] [US6] Implement USDA food search with debounced input, food result cards, quantity scaling, and macro preview in `frontend/app/(app)/recommendations/page.tsx`
+- [x] T141 [P] [US6] Implement macro progress sidebar (progress bars showing current meal vs daily targets) in `frontend/app/(app)/recommendations/page.tsx`
+- [x] T142 [P] [US6] Implement complete recommendations API client (all diet, food, meal, day-plan, split, workout functions) in `frontend/lib/api.ts`
+- [x] T143 [US6] Implement unified 4-tab recommendations page (Diet, Food & Meals, Day Planner, Workout) in `frontend/app/(app)/recommendations/page.tsx`
 
 **Checkpoint**: User Story 6 fully functional — end-to-end diet recommendation generation with restriction compliance, full nutritional display, and browsable history.
 
@@ -288,24 +285,24 @@ description: "Task list for InBody Scan Health Web Application"
 
 ### Tests for User Story 7 ⚠️ Write and verify these FAIL before implementing
 
-- [ ] T144 [P] [US7] Unit test: workout prompt for `gain_muscle_mass` goal includes "resistance" / "strength" keywords; `lose_body_fat` includes "cardio" / "aerobic" keywords in `services/recommendation-service/tests/unit/test_workout_prompt_builder.py`
-- [ ] T145 [P] [US7] Integration test: `POST /recommendations/workout/generate` returns 202 for user with active scan + goal in `services/recommendation-service/tests/integration/test_workout_router.py`
-- [ ] T146 [P] [US7] Integration test: `GET /recommendations/workout/latest` returns `weekly_plan` with at least 3 day entries, each with `type` and `exercises` list in `services/recommendation-service/tests/integration/test_workout_router.py`
-- [ ] T147 [P] [US7] E2E test: workout page displays weekly plan with exercises grouped by day in `frontend/tests/e2e/test_workout_recommendation.spec.ts`
+- [ ] T144 [P] [US7] Unit test: workout prompt for `gain_muscle_mass` includes "resistance"/"strength" keywords in `services/recommendation-service/tests/unit/test_prompt_builder.py`
+- [ ] T145 [P] [US7] Integration test: `POST /api/recommendations/workout/generate` returns 201 for user with active scan in `services/recommendation-service/tests/integration/test_recommendations_router.py`
+- [ ] T146 [P] [US7] Integration test: `GET /api/recommendations/workout` returns list of past workout recommendations in `services/recommendation-service/tests/integration/test_recommendations_router.py`
+- [ ] T147 [P] [US7] E2E test: workout tab displays weekly plan with exercises grouped by day in `frontend/tests/e2e/test_recommendations.spec.ts`
 
 ### Implementation for User Story 7
 
-- [ ] T148 [P] [US7] Create `WorkoutRecommendation` SQLAlchemy model (id UUID PK, user_id UUID indexed, scan_id UUID, goal_type ENUM, generated_at DATETIME, weekly_sessions INT, session_duration_min INT, weekly_plan_json TEXT, llm_model_used VARCHAR, llm_prompt_version VARCHAR) in `services/recommendation-service/src/models/workout_recommendation.py`
-- [ ] T149 [US7] Generate Alembic migration for `workout_recommendations` table in `services/recommendation-service/alembic/versions/`
-- [ ] T150 [P] [US7] Create `WorkoutRecommendationRepository` (create, get_latest_for_user, list_for_user ordered by generated_at DESC, get_by_id_for_user) in `services/recommendation-service/src/repositories/workout_recommendation_repository.py`
-- [ ] T151 [US7] Implement workout prompt template v1 (constructs prompt from: scan metrics, goal_type, profile; no PII; instructs LLM to return structured 7-day plan JSON) in `services/recommendation-service/src/llm/prompt_templates/workout_v1.py`
-- [ ] T152 [US7] Implement `WorkoutRecommendationService` (validate preconditions; build workout prompt; call GeminiClient; parse JSON response; validate weekly_plan structure; save WorkoutRecommendation) in `services/recommendation-service/src/services/workout_service.py`
-- [ ] T153 [US7] Implement `POST /recommendations/workout/generate` as a synchronous async endpoint that calls `WorkoutRecommendationService.generate()` and returns the completed plan in the response; add 60-second timeout guard in `services/recommendation-service/src/routers/workout_router.py`
-- [ ] T154 [P] [US7] Create Pydantic schemas (WorkoutGenerateResponse, WorkoutStatusResponse, WorkoutRecommendationDetail, WeeklyPlan, DayPlan, Exercise) in `services/recommendation-service/src/schemas/workout.py`
-- [ ] T155 [US7] Add workout recommendation router (POST `/recommendations/workout/generate`, GET `/recommendations/workout/status/{id}`, GET `/recommendations/workout/latest`, GET `/recommendations/workout/history`) in `services/recommendation-service/src/routers/workout_router.py`
-- [ ] T156 [P] [US7] Implement `WorkoutDayCard` component (day name, session type badge, exercises list with name + sets/reps or duration + intensity) in `frontend/src/components/recommendations/WorkoutDayCard.tsx`
-- [ ] T157 [P] [US7] Implement workout API client functions (generateWorkoutRecommendation, getWorkoutStatus, getLatestWorkoutRecommendation, getWorkoutHistory) in `frontend/src/lib/api/recommendations.ts` (extend existing file)
-- [ ] T158 [US7] Implement workout recommendations page (generate button → loading spinner during synchronous HTTP request → renders weekly plan grid on success → error state with retry button; history list tab) in `frontend/src/app/(app)/recommendations/workout/page.tsx`
+- [x] T148 [P] [US7] Create `WorkoutRecommendation` SQLAlchemy model (id UUID PK, user_id UUID indexed, scan_id UUID, goal_type VARCHAR, llm_response TEXT, structured_plan TEXT, edited_plan TEXT nullable, created_at DATETIME) in `services/recommendation-service/src/models/workout_recommendation.py`
+- [ ] T149 [US7] Generate Alembic migration — skipped: table created directly in Supabase
+- [ ] T150 [P] [US7] Create `WorkoutRecommendationRepository` — skipped: repository pattern not used
+- [x] T151 [US7] Implement workout prompt builder (constructs structured prompt from scan metrics + goal_type; instructs LLM to return structured 7-day plan JSON) in `services/recommendation-service/src/services/prompt_builder.py`
+- [x] T152 [US7] Implement workout recommendation service (validate preconditions, build prompt, call GeminiClient, parse JSON, save) in `services/recommendation-service/src/services/recommendation_service.py`
+- [x] T153 [US7] Implement `POST /api/recommendations/workout/generate` synchronous endpoint returning completed plan in `services/recommendation-service/src/routers/recommendations.py`
+- [x] T154 [P] [US7] Create workout recommendation schemas (GenerateWorkoutRequest, WorkoutRecommendationOut with edited_plan) in `services/recommendation-service/src/schemas/recommendation.py`
+- [x] T155 [US7] Add workout endpoints (POST `/workout/generate`, PATCH `/workout/{id}`, GET `/workout`) to recommendations router
+- [x] T156 [P] [US7] Implement workout day card component (day label, exercises list with sets/reps/weight/intensity) in `frontend/app/(app)/recommendations/page.tsx`
+- [x] T157 [P] [US7] Implement workout API client (generateWorkout, editWorkoutPlan, listWorkout) in `frontend/lib/api.ts`
+- [x] T158 [US7] Implement workout tab on unified recommendations page (AI generate, editable plan accordion, workout history) in `frontend/app/(app)/recommendations/page.tsx`
 
 **Checkpoint**: User Story 7 fully functional — workout plans generate, display correctly by goal type, and history is browsable.
 
@@ -319,23 +316,23 @@ description: "Task list for InBody Scan Health Web Application"
 
 ### Tests for User Story 8 ⚠️ Write and verify these FAIL before implementing
 
-- [ ] T159 [P] [US8] Integration test: regular user JWT receives 403 on `GET /admin/users` in `services/admin-service/tests/integration/test_admin_router.py`
-- [ ] T160 [P] [US8] Integration test: `POST /admin/users` creates account; new user can login via auth-service in `services/admin-service/tests/integration/test_admin_router.py`
-- [ ] T161 [P] [US8] Integration test: `GET /admin/users` response objects contain only `id`, `username`, `role`, `is_active`, `created_at` — no health-data fields in `services/admin-service/tests/integration/test_admin_router.py`
-- [ ] T162 [P] [US8] Integration test: `PATCH /admin/users/{id}/status` with `is_active: false` prevents subsequent login in `services/admin-service/tests/integration/test_admin_router.py`
-- [ ] T163 [P] [US8] E2E test: admin login redirects to `/admin` (not `/dashboard`); admin can see user list; admin cannot navigate to any user health page in `frontend/tests/e2e/test_admin.spec.ts`
+- [ ] T159 [P] [US8] Integration test: regular user JWT receives 403 on `GET /api/admin/users` in `services/admin-service/tests/integration/test_admin_router.py`
+- [ ] T160 [P] [US8] Integration test: `POST /api/admin/users` creates account; new user can login via auth-service in `services/admin-service/tests/integration/test_admin_router.py`
+- [ ] T161 [P] [US8] Integration test: `GET /api/admin/users` response objects contain only safe fields — no health-data fields in `services/admin-service/tests/integration/test_admin_router.py`
+- [ ] T162 [P] [US8] Integration test: `PATCH /api/admin/users/{id}` with `is_active: false` prevents subsequent login in `services/admin-service/tests/integration/test_admin_router.py`
+- [ ] T163 [P] [US8] E2E test: admin login redirects to `/admin`; admin can see user list in `frontend/tests/e2e/test_admin.spec.ts`
 
 ### Implementation for User Story 8
 
-- [ ] T164 [P] [US8] Create internal auth-service HTTP client (create_user, list_users, update_user_status, delete_user) in `services/admin-service/src/clients/auth_client.py`
-- [ ] T165 [P] [US8] Create Pydantic schemas (AdminUserListItem, CreateUserRequest, CreateUserResponse, UpdateStatusRequest) in `services/admin-service/src/schemas/admin.py`
-- [ ] T166 [US8] Implement `AdminService` (create user via auth_client; list users; update status; delete user; guard: cannot delete last admin; cannot delete own account) in `services/admin-service/src/services/admin_service.py`
-- [ ] T167 [US8] Implement admin router (GET `/admin/users`, POST `/admin/users`, PATCH `/admin/users/{id}/status`, DELETE `/admin/users/{id}`) with `require_role("admin")` dependency on all routes in `services/admin-service/src/routers/admin_router.py`
-- [ ] T168 [US8] Bootstrap admin-service FastAPI app in `services/admin-service/src/main.py`
-- [ ] T169 [P] [US8] Implement `UserTable` component (sortable table of users: username, role badge, status badge, deactivate/delete action buttons) using shadcn/ui Table in `frontend/src/components/admin/UserTable.tsx`
-- [ ] T170 [P] [US8] Implement `CreateUserForm` component (username + password fields, role selector, submit with loading state) using shadcn/ui Dialog + Form in `frontend/src/components/admin/CreateUserForm.tsx`
-- [ ] T171 [P] [US8] Implement admin API client (listUsers, createUser, updateUserStatus, deleteUser) in `frontend/src/lib/api/admin.ts`
-- [ ] T172 [US8] Implement admin portal page (user table, create user dialog, deactivate/delete actions with confirmation dialog) in `frontend/src/app/admin/page.tsx`
+- [x] T164 [P] [US8] Create internal auth-service HTTP client (create_user, list_users, update_user, delete_user) in `services/admin-service/src/services/admin_service.py`
+- [x] T165 [P] [US8] Create Pydantic schemas (UserOut, CreateUserRequest, UpdateUserRequest) in `services/admin-service/src/schemas/admin.py`
+- [x] T166 [US8] Implement `AdminService` (proxy calls to auth-service; guards: cannot delete last admin or own account) in `services/admin-service/src/services/admin_service.py`
+- [x] T167 [US8] Implement admin router (GET `/api/admin/users`, POST `/api/admin/users`, PATCH `/api/admin/users/{id}`, DELETE `/api/admin/users/{id}`) with `require_admin` dependency in `services/admin-service/src/routers/admin.py`
+- [x] T168 [US8] Bootstrap admin-service FastAPI app in `services/admin-service/src/main.py`
+- [x] T169 [P] [US8] Implement user management table (username, role badge, active status, deactivate/delete actions) in `frontend/app/admin/page.tsx`
+- [x] T170 [P] [US8] Implement create user form (username, password, is_admin toggle, submit with loading) in `frontend/app/admin/page.tsx`
+- [x] T171 [P] [US8] Implement admin API client (listUsers, createUser, updateUser, deleteUser) in `frontend/lib/api.ts`
+- [x] T172 [US8] Implement admin portal page (user table, create user dialog, confirmation modals) in `frontend/app/admin/page.tsx`
 
 **Checkpoint**: All user stories are now independently functional and complete.
 
@@ -347,18 +344,18 @@ description: "Task list for InBody Scan Health Web Application"
 
 ### Vercel Deployment Preparation
 
-- [ ] T173 [P] Implement `SupabaseStorageClient` in `services/scan-service/src/storage/supabase_storage.py` using `supabase-py` SDK — methods: `store_pdf(user_id, scan_id, pdf_bytes) -> storage_path` (uploads to `scan-pdfs` bucket) and `retrieve_pdf(storage_path) -> bytes`; used directly by ScanService with no local-file fallback needed
-- [ ] T174 [P] Configure `next.config.ts` for Vercel: add `images.remotePatterns` for Supabase Storage domain; add `NEXT_PUBLIC_API_BASE_URL` env var consumed by all API client functions (defaults to empty string for same-origin calls on Vercel)
-- [ ] T175 [P] Add CORS middleware to all 6 FastAPI services reading `ALLOWED_ORIGINS` env var (comma-separated); set `http://localhost:3000` for local dev and `https://{project}.vercel.app` for production; add to `.env.example`
-- [ ] T176 [P] Verify `.env.example` contains all required Supabase keys (`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_ANON_KEY`, `SUPABASE_STORAGE_BUCKET=scan-pdfs`) and `ALLOWED_ORIGINS` with inline documentation comments; confirm `.gitignore` excludes `.env`
-- [ ] T177 [P] Create `docs/deployment.md`: step-by-step Vercel-only deployment guide — (1) create Supabase project + copy DATABASE_URLs, (2) create Vercel project from repo, (3) set all env vars in Vercel dashboard, (4) run `alembic upgrade head` per service, (5) verify via Vercel preview URL
+- [x] T173 [P] Implement `SupabaseStorageClient` in `services/scan-service/src/storage/supabase_storage.py` — methods: `upload_pdf(user_id, scan_date, pdf_bytes) -> path`, `upload_csv(user_id, scan_date, csv_bytes) -> path`, `get_signed_url(path) -> url`; `scan-pdfs` bucket created in Supabase
+- [ ] T174 [P] Configure `next.config.ts` for Vercel: add `images.remotePatterns` for Supabase Storage domain; configure `NEXT_PUBLIC_*` env vars
+- [x] T175 [P] Add CORS middleware to all 6 FastAPI services reading `ALLOWED_ORIGINS` env var; configured in all `main.py` files
+- [x] T176 [P] `.env.example` contains all required Supabase keys and `ALLOWED_ORIGINS`; `.gitignore` excludes `.env`
+- [ ] T177 [P] Create `docs/deployment.md`: step-by-step Vercel-only deployment guide
 
 ### Navigation & UX
 
-- [ ] T179 Implement shared app layout with glassmorphism sidebar navigation (links to dashboard, metrics, recommendations, profile, scans; active state highlighting; user display + logout button) in `frontend/src/components/layout/AppSidebar.tsx` and `frontend/src/app/(app)/layout.tsx`
-- [ ] T180 [P] Implement skeleton loading components for dashboard, metrics, and recommendation pages in `frontend/src/components/ui/skeletons/`
-- [ ] T181 [P] Implement `DisclaimerBanner` component (non-dismissible health disclaimer: "Not a medical device — consult a professional") shown on diet and workout recommendation pages in `frontend/src/components/recommendations/DisclaimerBanner.tsx`
-- [ ] T182 [P] Implement React error boundary wrapping all major page sections; display graceful fallback UI on unexpected render errors in `frontend/src/components/ErrorBoundary.tsx`
+- [x] T179 Implement shared app layout with glassmorphism sidebar navigation (links to dashboard, metrics, recommendations, profile, scans; active state highlighting; logout button) in `frontend/app/(app)/layout.tsx`
+- [ ] T180 [P] Implement skeleton loading components for dashboard, metrics, and recommendation pages in `frontend/components/ui/skeletons/`
+- [ ] T181 [P] Implement `DisclaimerBanner` component (health disclaimer: "Not a medical device — consult a professional") on diet and workout recommendation pages
+- [ ] T182 [P] Implement React error boundary wrapping all major page sections in `frontend/components/ErrorBoundary.tsx`
 
 ### Observability & Security Hardening
 
@@ -371,6 +368,59 @@ description: "Task list for InBody Scan Health Web Application"
 - [ ] T185 Create `scripts/seed-usda-data.sh` that runs the USDA sync script (`python -m services.recommendation-service.src.usda.sync_usda`) to pre-populate the nutritional food cache; document in `quickstart.md` as a one-time setup step
 - [ ] T186 Create `scripts/test-all-services.sh` that runs pytest for all 5 backend services sequentially and reports pass/fail per service
 - [ ] T187 Run the full `quickstart.md` validation checklist against the locally running stack (`scripts/start-local.sh` + `next dev`) and resolve any failures before first Vercel deployment
+
+---
+
+---
+
+## Phase 12: Extended Features (Beyond Original Spec) ✅ All Completed
+
+**Purpose**: Features added during development that exceeded the original spec — custom meal planning, workout split management, plan editing, and infrastructure bug fixes.
+
+### Infrastructure Fixes
+
+- [x] T200 Fix `DuplicatePreparedStatementError` from Supabase pgbouncer transaction mode: add `NullPool` + `prepared_statement_name_func: lambda: f"__asyncpg_{uuid4()}__"` to `shared/python/db_utils/session.py`
+- [x] T201 Remove `Base.metadata.create_all` from all 5 service lifespan functions — tables managed in Supabase directly; `create_all` caused `DuplicatePreparedStatementError` on startup via sync dialect path
+- [x] T202 Fix Gemini 2.0 Flash JSON wrapping: add `_strip_markdown()` in `services/recommendation-service/src/llm/gemini_client.py` to strip ` ```json ``` ` fences before parsing
+
+### InBody CSV Support
+
+- [x] T203 Implement full InBody CSV extractor supporting real-device export format: 14-digit compact timestamps (`YYYYMMDDHHmmss`), lb→kg (×0.453592) and kJ→kcal (÷4.184) unit conversions, BOM stripping, `-` null handling, tabular and key-value layouts in `services/scan-service/src/services/csv_extractor.py`
+- [x] T204 Add `POST /api/scans/upload-csv` endpoint with optional `scan_date` form field — resolves date from: form field → CSV-embedded date → today in `services/scan-service/src/routers/scans.py`
+- [x] T205 Add `upload_csv()` to Supabase storage client storing CSV files at `scans/{user_id}/{scan_date}.csv` in `services/scan-service/src/storage/supabase_storage.py`
+
+### Custom Meal System
+
+- [x] T206 Create `CustomMeal` and `CustomMealItem` SQLAlchemy models with CASCADE delete in `services/recommendation-service/src/models/custom_meal.py`
+- [x] T207 Implement meal CRUD service (create_custom_meal, get_custom_meals, get_custom_meal, get_meal_items, update_custom_meal, delete_custom_meal) in `services/recommendation-service/src/services/meal_service.py`
+- [x] T208 Add meal endpoints (POST/GET/PATCH/DELETE `/api/recommendations/meals`, GET `/api/recommendations/meals/{id}`) to recommendations router
+- [x] T209 Implement food search tab (debounced USDA search, add-to-current-meal with quantity scaling, macro progress bars vs targets, save current meal as named custom meal) in `frontend/app/(app)/recommendations/page.tsx`
+- [x] T210 Implement saved meals list with delete capability in `frontend/app/(app)/recommendations/page.tsx`
+
+### Day Planner
+
+- [x] T211 Create `DayPlan` and `DayPlanEntry` SQLAlchemy models (plan_date, meal_slot, macro totals, items_snapshot JSON) in `services/recommendation-service/src/models/day_plan.py`
+- [x] T212 Implement day plan CRUD service (create_day_plan, get_day_plans, get_day_plan, get_day_plan_entries, delete_day_plan) in `services/recommendation-service/src/services/meal_service.py`
+- [x] T213 Add day-plan endpoints (POST/GET/DELETE `/api/recommendations/day-plans`) to recommendations router
+- [x] T214 Implement day planner tab (date + name input, meal slot selectors from saved meals, running macro totals vs daily targets, saved plans list) in `frontend/app/(app)/recommendations/page.tsx`
+
+### Workout Split Builder
+
+- [x] T215 Create `WorkoutSplit`, `WorkoutSplitDay`, and `WorkoutExercise` SQLAlchemy models with CASCADE delete in `services/recommendation-service/src/models/workout_split.py`
+- [x] T216 Implement evidence-based workout quality scoring algorithm (5 dimensions: muscle coverage 25pts, weekly volume 30pts, push/pull balance 20pts, cardio 15pts, training frequency 10pts) returning 0–100 score with label, feedback list, covered/missing muscle groups in `services/recommendation-service/src/services/workout_scorer.py`
+- [x] T217 Implement split CRUD service with automatic scoring on create/retrieve in `services/recommendation-service/src/services/split_service.py`
+- [x] T218 Add split endpoints (POST/GET/DELETE `/api/recommendations/splits`, GET `/api/recommendations/splits/{id}`, POST `/api/recommendations/splits/score`) to recommendations router
+- [x] T219 Implement workout split builder UI (7-day week, exercise input with sets/reps/weight/rest/notes, live quality score preview debounced 700ms, muscle coverage feedback) in `frontend/app/(app)/recommendations/page.tsx`
+- [x] T220 Implement saved splits list with quality score badges in `frontend/app/(app)/recommendations/page.tsx`
+
+### Editable LLM Plans
+
+- [x] T221 Add `edited_plan TEXT nullable` column to `diet_recommendations` and `workout_recommendations` tables in Supabase
+- [x] T222 Add `edited_plan: Mapped[str | None]` field to `DietRecommendation` and `WorkoutRecommendation` SQLAlchemy models
+- [x] T223 Implement `PATCH /api/recommendations/diet/{id}` endpoint to save user-edited plan JSON in recommendations router
+- [x] T224 Implement `PATCH /api/recommendations/workout/{id}` endpoint to save user-edited workout plan JSON in recommendations router
+- [x] T225 Implement editable diet plan accordion (per-day macro deviation indicator, inline text edit, save button) in `frontend/app/(app)/recommendations/page.tsx`
+- [x] T226 Implement editable workout plan (weekly plan display, inline edit mode, save button) in `frontend/app/(app)/recommendations/page.tsx`
 
 ---
 

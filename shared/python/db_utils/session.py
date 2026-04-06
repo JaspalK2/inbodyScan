@@ -1,21 +1,25 @@
 """Async SQLAlchemy session factory for asyncpg (Supabase PostgreSQL)."""
 import os
 from typing import AsyncGenerator
+from uuid import uuid4
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.pool import NullPool
 
 
 def make_engine(database_url_env: str):
     url = os.environ[database_url_env]
+    # Supabase uses pgbouncer in transaction mode.
+    # Fix: use UUID-based prepared statement names (avoids sequential collisions)
+    # and NullPool so SQLAlchemy doesn't reuse connections across requests.
     return create_async_engine(
         url,
-        pool_size=5,
-        max_overflow=10,
-        pool_pre_ping=True,
+        poolclass=NullPool,
         echo=False,
-        # Supabase uses pgbouncer in transaction mode which does not support
-        # prepared statements — disable asyncpg's statement cache entirely.
-        connect_args={"statement_cache_size": 0},
+        connect_args={
+            "statement_cache_size": 0,
+            "prepared_statement_name_func": lambda: f"__asyncpg_{uuid4()}__",
+        },
     )
 
 

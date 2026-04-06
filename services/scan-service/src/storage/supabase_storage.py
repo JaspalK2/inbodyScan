@@ -32,3 +32,20 @@ def get_signed_url(storage_path: str, expires_in: int = 3600) -> str:
     bucket = os.environ.get("SUPABASE_STORAGE_BUCKET", "scan-pdfs")
     result = client.storage.from_(bucket).create_signed_url(storage_path, expires_in)
     return result["signedURL"]
+
+
+def upload_csv(user_id: str, scan_date: str, csv_bytes: bytes) -> str:
+    """
+    Upload CSV to Supabase Storage.
+    Returns the storage path: scans/{user_id}/{scan_date}.csv
+    """
+    client = _get_client()
+    bucket = os.environ.get("SUPABASE_STORAGE_BUCKET", "scan-pdfs")
+    path = f"scans/{user_id}/{scan_date}.csv"
+
+    client.storage.from_(bucket).upload(
+        path=path,
+        file=csv_bytes,
+        file_options={"content-type": "text/csv", "upsert": "true"},
+    )
+    return path

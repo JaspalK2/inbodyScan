@@ -14,4 +14,5 @@ class WorkoutRecommendation(Base):
     goal_type: Mapped[str] = mapped_column(String(50), nullable=False)
     llm_response: Mapped[str] = mapped_column(Text, nullable=False)
     structured_plan: Mapped[str] = mapped_column(Text, nullable=False)  # JSON string
+    edited_plan: Mapped[str | None] = mapped_column(Text)  # user-edited version of structured_plan
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
