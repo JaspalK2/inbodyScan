@@ -8,7 +8,14 @@ from sqlalchemy.pool import NullPool
 
 
 def make_engine(database_url_env: str):
-    url = os.environ[database_url_env]
+    # Fall back to DATABASE_URL so all services work with a single Vercel env var.
+    # Use a dummy URL at build/import time if neither is set (no DB connection
+    # is made until the first actual query, so this is safe).
+    url = (
+        os.environ.get(database_url_env)
+        or os.environ.get("DATABASE_URL")
+        or "postgresql+asyncpg://user:pass@localhost/db"
+    )
     # Supabase uses pgbouncer in transaction mode.
     # Fix: use UUID-based prepared statement names (avoids sequential collisions)
     # and NullPool so SQLAlchemy doesn't reuse connections across requests.
