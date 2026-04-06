@@ -1,12 +1,7 @@
-import sys, os, importlib.util
+import sys, os
 
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 sys.path.insert(0, repo_root)
+sys.path.insert(0, os.path.join(repo_root, 'services', 'auth-service'))
 
-spec = importlib.util.spec_from_file_location(
-    "auth_main",
-    os.path.join(repo_root, "services", "auth-service", "src", "main.py")
-)
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
-handler = module.handler
+from src.main import handler
