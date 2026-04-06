@@ -2,34 +2,34 @@
   "version": 2,
   "builds": [
     {
-      "src": "frontend/api/auth/[...path].py",
+      "src": "api/auth/[...path].py",
       "use": "@vercel/python",
-      "config": { "maxDuration": 15, "includeFiles": ["frontend/api/auth/**", "services/auth-service/src/**", "shared/**", "requirements.txt"] }
+      "config": { "maxDuration": 15, "includeFiles": ["api/auth/**", "services/auth-service/src/**", "shared/**", "requirements.txt"] }
     },
     {
-      "src": "frontend/api/users/[...path].py",
+      "src": "api/users/[...path].py",
       "use": "@vercel/python",
-      "config": { "maxDuration": 15, "includeFiles": ["frontend/api/users/**", "services/user-service/src/**", "shared/**", "requirements.txt"] }
+      "config": { "maxDuration": 15, "includeFiles": ["api/users/**", "services/user-service/src/**", "shared/**", "requirements.txt"] }
     },
     {
-      "src": "frontend/api/scans/[...path].py",
+      "src": "api/scans/[...path].py",
       "use": "@vercel/python",
-      "config": { "maxDuration": 20, "includeFiles": ["frontend/api/scans/**", "services/scan-service/src/**", "shared/**", "requirements.txt"] }
+      "config": { "maxDuration": 20, "includeFiles": ["api/scans/**", "services/scan-service/src/**", "shared/**", "requirements.txt"] }
     },
     {
-      "src": "frontend/api/analytics/[...path].py",
+      "src": "api/analytics/[...path].py",
       "use": "@vercel/python",
-      "config": { "maxDuration": 15, "includeFiles": ["frontend/api/analytics/**", "services/analytics-service/src/**", "shared/**", "requirements.txt"] }
+      "config": { "maxDuration": 15, "includeFiles": ["api/analytics/**", "services/analytics-service/src/**", "shared/**", "requirements.txt"] }
     },
     {
-      "src": "frontend/api/recommendations/[...path].py",
+      "src": "api/recommendations/[...path].py",
       "use": "@vercel/python",
-      "config": { "maxDuration": 30, "includeFiles": ["frontend/api/recommendations/**", "services/recommendation-service/src/**", "shared/**", "requirements.txt"] }
+      "config": { "maxDuration": 30, "includeFiles": ["api/recommendations/**", "services/recommendation-service/src/**", "shared/**", "requirements.txt"] }
     },
     {
-      "src": "frontend/api/admin/[...path].py",
+      "src": "api/admin/[...path].py",
       "use": "@vercel/python",
-      "config": { "maxDuration": 15, "includeFiles": ["frontend/api/admin/**", "services/admin-service/src/**", "shared/**", "requirements.txt"] }
+      "config": { "maxDuration": 15, "includeFiles": ["api/admin/**", "services/admin-service/src/**", "shared/**", "requirements.txt"] }
     },
     {
       "src": "frontend/package.json",
