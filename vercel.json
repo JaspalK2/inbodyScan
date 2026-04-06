@@ -1,18 +1,11 @@
 {
   "version": 2,
-  "functions": {
-    "services/auth-service/src/main.py": { "runtime": "python3.12", "maxDuration": 15 },
-    "services/user-service/src/main.py": { "runtime": "python3.12", "maxDuration": 15 },
-    "services/scan-service/src/main.py": { "runtime": "python3.12", "maxDuration": 20 },
-    "services/analytics-service/src/main.py": { "runtime": "python3.12", "maxDuration": 15 },
-    "services/recommendation-service/src/main.py": { "runtime": "python3.12", "maxDuration": 30 },
-    "services/admin-service/src/main.py": { "runtime": "python3.12", "maxDuration": 15 }
-  },
   "builds": [
     {
       "src": "services/auth-service/src/main.py",
       "use": "@vercel/python",
       "config": {
+        "maxDuration": 15,
         "includeFiles": [
           "services/auth-service/requirements.txt",
           "services/auth-service/src/**",
@@ -24,6 +17,7 @@
       "src": "services/user-service/src/main.py",
       "use": "@vercel/python",
       "config": {
+        "maxDuration": 15,
         "includeFiles": [
           "services/user-service/requirements.txt",
           "services/user-service/src/**",
@@ -35,6 +29,7 @@
       "src": "services/scan-service/src/main.py",
       "use": "@vercel/python",
       "config": {
+        "maxDuration": 20,
         "includeFiles": [
           "services/scan-service/requirements.txt",
           "services/scan-service/src/**",
@@ -46,6 +41,7 @@
       "src": "services/analytics-service/src/main.py",
       "use": "@vercel/python",
       "config": {
+        "maxDuration": 15,
         "includeFiles": [
           "services/analytics-service/requirements.txt",
           "services/analytics-service/src/**",
@@ -57,6 +53,7 @@
       "src": "services/recommendation-service/src/main.py",
       "use": "@vercel/python",
       "config": {
+        "maxDuration": 30,
         "includeFiles": [
           "services/recommendation-service/requirements.txt",
           "services/recommendation-service/src/**",
@@ -68,6 +65,7 @@
       "src": "services/admin-service/src/main.py",
       "use": "@vercel/python",
       "config": {
+        "maxDuration": 15,
         "includeFiles": [
           "services/admin-service/requirements.txt",
           "services/admin-service/src/**",
