@@ -1,11 +1,11 @@
 import sys, os, importlib.util
 
-repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 sys.path.insert(0, repo_root)
 
 spec = importlib.util.spec_from_file_location(
-    "analytics_main",
-    os.path.join(repo_root, "services", "analytics-service", "src", "main.py")
+    "auth_main",
+    os.path.join(repo_root, "services", "auth-service", "src", "main.py")
 )
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
