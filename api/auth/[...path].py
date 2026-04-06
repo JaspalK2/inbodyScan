@@ -1,7 +1,8 @@
 import sys, os
 
-repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-sys.path.insert(0, repo_root)
-sys.path.insert(0, os.path.join(repo_root, 'services', 'auth-service'))
+# includeFiles are placed alongside this file in the Lambda bundle root
+bundle = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, bundle)
+sys.path.insert(0, os.path.join(bundle, "services", "auth-service"))
 
 from src.main import handler
