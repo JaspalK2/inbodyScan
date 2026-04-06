@@ -419,9 +419,8 @@ function DietTab() {
   });
 
   const today = new Date().toISOString().slice(0, 10);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const logMealMutation = useMutation({
-    mutationFn: (meal: any) => recommendations.createFoodLog({
+    mutationFn: (meal: { meal?: string; recId?: string; calories?: number; protein_g?: number; carbs_g?: number; fat_g?: number }) => recommendations.createFoodLog({
       log_date: today,
       entries: [{
         food_name: meal.meal ?? "Diet plan meal",
@@ -592,11 +591,11 @@ function DietPlanCard({
               </div>
               {/* Live macro totals from edited plan */}
               {(() => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const allMeals = (plan?.days as any[] ?? []).flatMap((d: any) => d.meals ?? []);
-                const totalProtein = allMeals.reduce((s: number, m: any) => s + (m.protein_g > 0 ? m.protein_g : 0), 0);
-                const totalCarbs   = allMeals.reduce((s: number, m: any) => s + (m.carbs_g   > 0 ? m.carbs_g   : 0), 0);
-                const totalFat     = allMeals.reduce((s: number, m: any) => s + (m.fat_g     > 0 ? m.fat_g     : 0), 0);
+                type MealRow = { protein_g?: number; carbs_g?: number; fat_g?: number; meals?: MealRow[] };
+                const allMeals = (plan?.days as MealRow[] ?? []).flatMap((d) => d.meals ?? []);
+                const totalProtein = allMeals.reduce((s: number, m: MealRow) => s + (( m.protein_g ?? 0) > 0 ? (m.protein_g ?? 0) : 0), 0);
+                const totalCarbs   = allMeals.reduce((s: number, m: MealRow) => s + ((m.carbs_g   ?? 0) > 0 ? (m.carbs_g   ?? 0) : 0), 0);
+                const totalFat     = allMeals.reduce((s: number, m: MealRow) => s + ((m.fat_g     ?? 0) > 0 ? (m.fat_g     ?? 0) : 0), 0);
                 const totalCal     = totalProtein * 4 + totalCarbs * 4 + totalFat * 9;
                 const pieData = [
                   { name: "Protein", value: Math.max(totalProtein * 4, 0.01) },
