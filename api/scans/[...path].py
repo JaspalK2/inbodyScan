@@ -10,11 +10,23 @@ class _LazyASGI:
     """Defers service import until first request so Vercel build validation passes."""
 
     _real = None
+    _db_initialized = False
 
     async def __call__(self, scope, receive, send):
         if self._real is None:
             from src.main import app as _app
             self._real = _app
+        if not self._db_initialized and scope.get("type") == "http":
+            self._db_initialized = True
+            try:
+                from src.db.session import _engine
+                from shared.python.db_utils.session import Base
+                import src.models.scan  # noqa
+                import src.models.metric  # noqa
+                async with _engine.begin() as conn:
+                    await conn.run_sync(Base.metadata.create_all)
+            except Exception:
+                pass
         await self._real(scope, receive, send)
 
 
