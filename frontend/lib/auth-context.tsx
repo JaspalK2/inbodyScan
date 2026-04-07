@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { auth, setAccessToken, clearAccessToken, registerSessionExpiredHandler } from "./api";
+import { auth, user as userApi, setAccessToken, clearAccessToken, registerSessionExpiredHandler } from "./api";
+import { parseGoogleName } from "./parse-google-name";
 
 interface AuthUser {
   id: string;
@@ -23,6 +24,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
+  register: (username: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   googleLogin: (idToken: string) => Promise<GoogleLoginResult>;
   confirmGoogleLink: (linkToken: string) => Promise<void>;
@@ -67,6 +69,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(me);
   };
 
+  const register = async (username: string, email: string, password: string) => {
+    await auth.register(username, email, password);
+    const { access_token } = await auth.login(username, password);
+    setAccessToken(access_token);
+    const me = await auth.me();
+    setUser(me);
+  };
+
   const logout = async () => {
     await auth.logout();
     clearAccessToken();
@@ -89,6 +99,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAccessToken(result.access_token);
       const me = await auth.me();
       setUser(me);
+      // Auto-populate profile name from Google if not already set
+      if (result.google_name) {
+        try {
+          const profile = await userApi.getProfile();
+          if (!profile.first_name) {
+            const parsed = parseGoogleName(result.google_name);
+            if (parsed.firstName) {
+              await userApi.updateProfile({
+                first_name: parsed.firstName,
+                last_name: parsed.lastName ?? undefined,
+              });
+            }
+          }
+        } catch {
+          // Non-fatal — profile name auto-populate is best-effort
+        }
+      }
     }
     return { needsLink: false };
   };
@@ -101,7 +128,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, googleLogin, confirmGoogleLink }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, googleLogin, confirmGoogleLink }}>
       {children}
     </AuthContext.Provider>
   );

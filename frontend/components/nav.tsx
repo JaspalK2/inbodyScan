@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth-context";
+import { user as userApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard, Upload, BarChart2, User, Lightbulb, ShieldCheck, LogOut } from "lucide-react";
 
@@ -17,6 +19,10 @@ export function Nav() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { data: profile } = useQuery({ queryKey: ["profile"], queryFn: userApi.getProfile, enabled: !!user });
+  const displayName = profile?.first_name
+    ? `${profile.first_name}${profile.last_name ? ` ${profile.last_name}` : ""}`
+    : user?.username;
 
   const handleLogout = async () => {
     await logout();
@@ -27,7 +33,7 @@ export function Nav() {
     <nav className="fixed left-0 top-0 h-full w-60 glass-card rounded-none border-r border-white/10 flex flex-col p-4">
       <div className="mb-8 px-2">
         <span className="text-xl font-bold gradient-text">InBody</span>
-        <p className="text-xs text-muted-foreground mt-0.5">{user?.username}</p>
+        <p className="text-xs text-muted-foreground mt-0.5">{displayName}</p>
       </div>
 
       <div className="flex-1 space-y-1">

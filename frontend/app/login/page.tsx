@@ -11,11 +11,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
-const schema = z.object({
+const loginSchema = z.object({
   username: z.string().min(3),
   password: z.string().min(8),
 });
-type FormData = z.infer<typeof schema>;
+type LoginData = z.infer<typeof loginSchema>;
+
+const registerSchema = z.object({
+  username: z.string().min(3, "Username must be at least 3 characters").max(64).regex(/^\w+$/, "Only letters, numbers, and underscores"),
+  email: z.string().email("Enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+});
+type RegisterData = z.infer<typeof registerSchema>;
 
 interface LinkPendingState {
   linkToken: string;
@@ -24,18 +31,18 @@ interface LinkPendingState {
 }
 
 export default function LoginPage() {
-  const { login, googleLogin, confirmGoogleLink } = useAuth();
+  const { login, register, googleLogin, confirmGoogleLink } = useAuth();
   const router = useRouter();
+  const [mode, setMode] = useState<"signin" | "register">("signin");
   const [error, setError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [linkPending, setLinkPending] = useState<LinkPendingState | null>(null);
   const [linkLoading, setLinkLoading] = useState(false);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-  });
+  const loginForm = useForm<LoginData>({ resolver: zodResolver(loginSchema) });
+  const registerForm = useForm<RegisterData>({ resolver: zodResolver(registerSchema) });
 
-  const onSubmit = async (data: FormData) => {
+  const onSignIn = async (data: LoginData) => {
     setError(null);
     try {
       await login(data.username, data.password);
@@ -43,6 +50,17 @@ export default function LoginPage() {
     } catch (e: unknown) {
       const err = e as { detail?: string };
       setError(err?.detail ?? "Login failed");
+    }
+  };
+
+  const onRegister = async (data: RegisterData) => {
+    setError(null);
+    try {
+      await register(data.username, data.email, data.password);
+      router.push("/profile");
+    } catch (e: unknown) {
+      const err = e as { detail?: string };
+      setError(err?.detail ?? "Registration failed");
     }
   };
 
@@ -88,16 +106,25 @@ export default function LoginPage() {
     }
   };
 
+  const switchMode = (next: "signin" | "register") => {
+    setMode(next);
+    setError(null);
+    loginForm.reset();
+    registerForm.reset();
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md glass-card p-8">
         {/* Logo / Title */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold gradient-text">InBody Analyzer</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Sign in to your account</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {mode === "signin" ? "Sign in to your account" : "Create a new account"}
+          </p>
         </div>
 
-        {/* Account Linking Confirmation Modal */}
+        {/* Account Linking Confirmation */}
         {linkPending && (
           <div className="mb-6 rounded-lg border border-purple-500/30 bg-purple-500/10 p-4 space-y-3">
             <p className="text-sm font-medium text-foreground">
@@ -135,49 +162,143 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <div className="space-y-1.5">
-            <Label htmlFor="username" className="text-foreground/80">Username</Label>
-            <Input
-              id="username"
-              {...register("username")}
-              className="bg-white/5 border-white/10 focus:border-purple-500 text-foreground placeholder:text-muted-foreground"
-              placeholder="your_username"
-            />
-            {errors.username && <p className="text-xs text-destructive">{errors.username.message}</p>}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-foreground/80">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              {...register("password")}
-              className="bg-white/5 border-white/10 focus:border-purple-500 text-foreground"
-              placeholder="••••••••"
-            />
-            {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-          </div>
-
-          {error && (
-            <div className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
-              {error}
+        {/* Sign In Form */}
+        {mode === "signin" && (
+          <form onSubmit={loginForm.handleSubmit(onSignIn)} className="space-y-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="username" className="text-foreground/80">Username</Label>
+              <Input
+                id="username"
+                {...loginForm.register("username")}
+                className="bg-white/5 border-white/10 focus:border-purple-500 text-foreground placeholder:text-muted-foreground"
+                placeholder="your_username"
+              />
+              {loginForm.formState.errors.username && (
+                <p className="text-xs text-destructive">{loginForm.formState.errors.username.message}</p>
+              )}
             </div>
-          )}
 
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full btn-primary-glass glow-purple"
-          >
-            {isSubmitting ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Signing in…
-              </span>
-            ) : "Sign In"}
-          </Button>
-        </form>
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-foreground/80">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                {...loginForm.register("password")}
+                className="bg-white/5 border-white/10 focus:border-purple-500 text-foreground"
+                placeholder="••••••••"
+              />
+              {loginForm.formState.errors.password && (
+                <p className="text-xs text-destructive">{loginForm.formState.errors.password.message}</p>
+              )}
+            </div>
+
+            {error && (
+              <div className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={loginForm.formState.isSubmitting}
+              className="w-full btn-primary-glass glow-purple"
+            >
+              {loginForm.formState.isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Signing in…
+                </span>
+              ) : "Sign In"}
+            </Button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              Don&apos;t have an account?{" "}
+              <button
+                type="button"
+                onClick={() => switchMode("register")}
+                className="text-purple-400 hover:text-purple-300 underline underline-offset-2"
+              >
+                Create Account
+              </button>
+            </p>
+          </form>
+        )}
+
+        {/* Register Form */}
+        {mode === "register" && (
+          <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-5">
+            <div className="space-y-1.5">
+              <Label htmlFor="reg-username" className="text-foreground/80">Username</Label>
+              <Input
+                id="reg-username"
+                {...registerForm.register("username")}
+                className="bg-white/5 border-white/10 focus:border-purple-500 text-foreground placeholder:text-muted-foreground"
+                placeholder="your_username"
+              />
+              {registerForm.formState.errors.username && (
+                <p className="text-xs text-destructive">{registerForm.formState.errors.username.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="reg-email" className="text-foreground/80">Email</Label>
+              <Input
+                id="reg-email"
+                type="email"
+                {...registerForm.register("email")}
+                className="bg-white/5 border-white/10 focus:border-purple-500 text-foreground placeholder:text-muted-foreground"
+                placeholder="you@example.com"
+              />
+              {registerForm.formState.errors.email && (
+                <p className="text-xs text-destructive">{registerForm.formState.errors.email.message}</p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="reg-password" className="text-foreground/80">Password</Label>
+              <Input
+                id="reg-password"
+                type="password"
+                {...registerForm.register("password")}
+                className="bg-white/5 border-white/10 focus:border-purple-500 text-foreground"
+                placeholder="••••••••"
+              />
+              {registerForm.formState.errors.password && (
+                <p className="text-xs text-destructive">{registerForm.formState.errors.password.message}</p>
+              )}
+            </div>
+
+            {error && (
+              <div className="rounded-lg bg-destructive/10 border border-destructive/30 px-4 py-3 text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={registerForm.formState.isSubmitting}
+              className="w-full btn-primary-glass glow-purple"
+            >
+              {registerForm.formState.isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  Creating account…
+                </span>
+              ) : "Create Account"}
+            </Button>
+
+            <p className="text-center text-xs text-muted-foreground">
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick={() => switchMode("signin")}
+                className="text-purple-400 hover:text-purple-300 underline underline-offset-2"
+              >
+                Sign In Instead
+              </button>
+            </p>
+          </form>
+        )}
 
         {/* Divider */}
         <div className="my-5 flex items-center gap-3">
