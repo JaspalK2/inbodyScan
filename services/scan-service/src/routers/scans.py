@@ -102,6 +102,7 @@ async def upload_scan_csv(
     )
 
 
+@router.get("", response_model=list[ScanOut])
 @router.get("/", response_model=list[ScanOut])
 async def list_scans(user_id: str = Depends(get_current_user_id), session: AsyncSession = Depends(get_db)):
     return await get_scans_for_user(session, user_id)
