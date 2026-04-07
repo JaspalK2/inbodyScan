@@ -1,12 +1,12 @@
 {
   "version": 2,
   "routes": [
-    { "src": "/api/auth/(.*)", "dest": "/api/auth/$1" },
-    { "src": "/api/users/(.*)", "dest": "/api/users/$1" },
-    { "src": "/api/scans/(.*)", "dest": "/api/scans/$1" },
-    { "src": "/api/analytics/(.*)", "dest": "/api/analytics/$1" },
-    { "src": "/api/recommendations/(.*)", "dest": "/api/recommendations/$1" },
-    { "src": "/api/admin/(.*)", "dest": "/api/admin/$1" },
+    { "src": "/api/auth/(.*)", "dest": "/api/auth/[...path]" },
+    { "src": "/api/users/(.*)", "dest": "/api/users/[...path]" },
+    { "src": "/api/scans/(.*)", "dest": "/api/scans/[...path]" },
+    { "src": "/api/analytics/(.*)", "dest": "/api/analytics/[...path]" },
+    { "src": "/api/recommendations/(.*)", "dest": "/api/recommendations/[...path]" },
+    { "src": "/api/admin/(.*)", "dest": "/api/admin/[...path]" },
     { "src": "/(.*)", "dest": "/frontend/$1" }
   ],
   "builds": [
