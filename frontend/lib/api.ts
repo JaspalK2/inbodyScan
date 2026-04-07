@@ -102,7 +102,7 @@ export const scans = {
     if (scan_date) form.append("scan_date", scan_date);
     return request<ScanWithMetrics>("scan", "/api/scans/upload-csv", { method: "POST", body: form });
   },
-  list: () => request<Scan[]>("scan", "/api/scans/"),
+  list: () => request<Scan[]>("scan", "/api/scans"),
   get: (id: string) => request<ScanWithMetrics>("scan", `/api/scans/${id}`),
   downloadUrl: (id: string) => request<{ url: string }>("scan", `/api/scans/${id}/download-url`),
 };
