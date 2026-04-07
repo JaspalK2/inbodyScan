@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
 } from "recharts";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ScanLine } from "lucide-react";
+import Link from "next/link";
 
 const METRIC_LABELS: Record<string, string> = {
   body_weight_kg: "Body Weight (kg)",
@@ -116,8 +117,12 @@ export default function DashboardPage() {
       </div>
 
       {data.deltas.length === 0 ? (
-        <div className="glass-card p-12 text-center">
-          <p className="text-muted-foreground">No scans yet. Upload your first InBody scan to get started.</p>
+        <div className="glass-card p-12 text-center space-y-4">
+          <ScanLine className="h-12 w-12 text-muted-foreground mx-auto opacity-40" />
+          <p className="text-muted-foreground">No scans yet. Upload your first InBody scan to see your analytics.</p>
+          <Link href="/scans" className="inline-flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium bg-purple-600 hover:bg-purple-700 text-white transition-colors">
+            Upload First Scan
+          </Link>
         </div>
       ) : (
         <>

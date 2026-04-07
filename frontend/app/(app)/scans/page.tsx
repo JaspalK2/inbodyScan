@@ -8,6 +8,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileText, ChevronDown, ChevronUp, Upload, FileSpreadsheet } from "lucide-react";
 
+const METRIC_LABELS: Record<string, string> = {
+  body_weight_kg: "Body Weight (kg)",
+  body_fat_percentage: "Body Fat %",
+  skeletal_muscle_mass_kg: "Skeletal Muscle Mass (kg)",
+  fat_free_mass_kg: "Fat-Free Mass (kg)",
+  body_mass_index: "BMI",
+  visceral_fat_level: "Visceral Fat Level",
+  basal_metabolic_rate_kcal: "BMR (kcal)",
+  total_body_water_l: "Total Body Water (L)",
+  segmental_lean_left_arm_kg: "Left Arm Lean (kg)",
+  segmental_lean_right_arm_kg: "Right Arm Lean (kg)",
+  segmental_lean_left_leg_kg: "Left Leg Lean (kg)",
+  segmental_lean_right_leg_kg: "Right Leg Lean (kg)",
+  segmental_lean_trunk_kg: "Trunk Lean (kg)",
+};
+
 const ACCEPT_PDF = "application/pdf";
 const ACCEPT_CSV = ".csv,text/csv,application/csv";
 
@@ -27,8 +43,8 @@ function ScanMetricsRow({ scanId }: { scanId: string }) {
     <div className="px-4 pb-4 grid grid-cols-2 md:grid-cols-4 gap-2">
       {metrics.map((m) => (
         <div key={m.metric_key} className="rounded-lg bg-white/5 p-2">
-          <p className="text-xs text-muted-foreground capitalize">
-            {m.metric_key.replace(/_/g, " ")}
+          <p className="text-xs text-muted-foreground">
+            {METRIC_LABELS[m.metric_key] ?? m.metric_key.replace(/_/g, " ")}
           </p>
           <p className="text-sm font-semibold text-foreground">
             {m.metric_value?.toFixed(2)}

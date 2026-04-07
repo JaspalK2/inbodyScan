@@ -244,10 +244,15 @@ async def del_split(split_id: str, user_id: str = Depends(get_current_user_id), 
 
 @router.post("/diet/generate", response_model=DietRecommendationOut, status_code=status.HTTP_201_CREATED)
 async def generate_diet(body: GenerateDietRequest, user_id: str = Depends(get_current_user_id), session: AsyncSession = Depends(get_db)):
-    return await generate_diet_recommendation(
-        session, user_id, body.scan_id, body.metrics, body.goal_type,
-        body.dietary_restrictions, body.age, body.height_cm, body.gender, body.activity_level,
-    )
+    try:
+        return await generate_diet_recommendation(
+            session, user_id, body.scan_id, body.metrics, body.goal_type,
+            body.dietary_restrictions, body.age, body.height_cm, body.gender, body.activity_level,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Diet plan generation failed: {exc}") from exc
 
 
 @router.patch("/diet/{rec_id}", response_model=DietRecommendationOut)
@@ -283,7 +288,12 @@ async def list_diet(user_id: str = Depends(get_current_user_id), session: AsyncS
 
 @router.post("/workout/generate", response_model=WorkoutRecommendationOut, status_code=status.HTTP_201_CREATED)
 async def generate_workout(body: GenerateWorkoutRequest, user_id: str = Depends(get_current_user_id), session: AsyncSession = Depends(get_db)):
-    return await generate_workout_recommendation(session, user_id, body.scan_id, body.metrics, body.goal_type)
+    try:
+        return await generate_workout_recommendation(session, user_id, body.scan_id, body.metrics, body.goal_type)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=503, detail=f"Workout plan generation failed: {exc}") from exc
 
 
 @router.patch("/workout/{rec_id}", response_model=WorkoutRecommendationOut)

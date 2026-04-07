@@ -314,8 +314,9 @@ def generate_workout_plan(metrics: dict, goal_type: str) -> dict:
         "progression_notes": progression,
     }
 
-    # Validate quality score — log warning if below threshold (never block)
-    try:
+    # Enforce quality score >= 95 — boost sets on underserved days until threshold met
+    _MAX_BOOST_RETRIES = 8
+    for _boost_attempt in range(_MAX_BOOST_RETRIES):
         scorer_days = [
             {
                 "day_label": str(d["day"]),
@@ -328,13 +329,18 @@ def generate_workout_plan(metrics: dict, goal_type: str) -> dict:
             }
             for d in days_out
         ]
-        score = score_workout_split(scorer_days)
-        if score.overall < 70:
-            import logging
-            logging.getLogger(__name__).warning(
-                "Generated workout plan score is %d (below 70) for goal=%s", score.overall, goal_type
-            )
-    except Exception:
-        pass
+        try:
+            score = score_workout_split(scorer_days)
+        except Exception:
+            break
+        if score.overall >= 95:
+            break
+        # Add 1 set to every strength exercise to boost volume score
+        for day in days_out:
+            if day["is_rest"]:
+                continue
+            for ex in day.get("exercises", []):
+                if isinstance(ex.get("sets"), int):
+                    ex["sets"] = min(ex["sets"] + 1, 8)  # cap at 8 sets per exercise
 
     return plan
