@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "trailingSlash": false,
   "builds": [
     {
       "src": "api/auth/[...path].py",
@@ -38,17 +37,17 @@
     }
   ],
   "routes": [
-    { "src": "/api/auth/?", "dest": "/api/auth/[...path].py?path=" },
+    { "src": "/api/auth$", "dest": "/api/auth/[...path].py?path=" },
     { "src": "/api/auth/(.*)", "dest": "/api/auth/[...path].py?path=$1" },
-    { "src": "/api/users/?", "dest": "/api/users/[...path].py?path=" },
+    { "src": "/api/users$", "dest": "/api/users/[...path].py?path=" },
     { "src": "/api/users/(.*)", "dest": "/api/users/[...path].py?path=$1" },
-    { "src": "/api/scans/?", "dest": "/api/scans/[...path].py?path=" },
+    { "src": "/api/scans$", "dest": "/api/scans/[...path].py?path=" },
     { "src": "/api/scans/(.*)", "dest": "/api/scans/[...path].py?path=$1" },
-    { "src": "/api/analytics/?", "dest": "/api/analytics/[...path].py?path=" },
+    { "src": "/api/analytics$", "dest": "/api/analytics/[...path].py?path=" },
     { "src": "/api/analytics/(.*)", "dest": "/api/analytics/[...path].py?path=$1" },
-    { "src": "/api/recommendations/?", "dest": "/api/recommendations/[...path].py?path=" },
+    { "src": "/api/recommendations$", "dest": "/api/recommendations/[...path].py?path=" },
     { "src": "/api/recommendations/(.*)", "dest": "/api/recommendations/[...path].py?path=$1" },
-    { "src": "/api/admin/?", "dest": "/api/admin/[...path].py?path=" },
+    { "src": "/api/admin$", "dest": "/api/admin/[...path].py?path=" },
     { "src": "/api/admin/(.*)", "dest": "/api/admin/[...path].py?path=$1" },
     { "src": "/(.*)", "dest": "/frontend/$1" }
   ]
