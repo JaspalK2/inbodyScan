@@ -10,6 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from .routers.recommendations import router as rec_router
 from .db.session import _engine
+from shared.python.db_utils.session import Base
 
 # Import all models so SQLAlchemy metadata is populated
 from .models import diet_recommendation, workout_recommendation, nutritional_food  # noqa
@@ -22,6 +23,11 @@ _scheduler = AsyncIOScheduler()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    try:
+        async with _engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception:
+        pass
     # Start weekly food DB refresh scheduler (Sunday 02:00 UTC)
     usda_key = os.environ.get("USDA_API_KEY", "")
     if usda_key:

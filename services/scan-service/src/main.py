@@ -15,7 +15,11 @@ from .models import scan, metric  # noqa: F401
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Tables are managed via Supabase / Alembic migrations — skip create_all
+    try:
+        async with _engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception:
+        pass
     yield
     await _engine.dispose()
 

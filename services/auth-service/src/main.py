@@ -21,7 +21,11 @@ from .models import user, refresh_token, google_link_request  # noqa: F401
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Tables are managed via Supabase / Alembic migrations — skip create_all
+    try:
+        async with _engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception:
+        pass
     await _seed_admin()
     yield
     await _engine.dispose()
