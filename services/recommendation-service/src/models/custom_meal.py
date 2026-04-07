@@ -27,6 +27,8 @@ class CustomMealItem(Base):
     fdc_id: Mapped[int | None] = mapped_column()          # nullable for manual entries
     food_name: Mapped[str] = mapped_column(String(255), nullable=False)
     quantity_g: Mapped[float] = mapped_column(Float, nullable=False, default=100.0)
+    entered_quantity: Mapped[float | None] = mapped_column(Float, nullable=True)
+    entered_unit: Mapped[str | None] = mapped_column(String(10), nullable=True)
     calories_kcal: Mapped[float | None] = mapped_column(Float)
     protein_g: Mapped[float | None] = mapped_column(Float)
     carbs_g: Mapped[float | None] = mapped_column(Float)

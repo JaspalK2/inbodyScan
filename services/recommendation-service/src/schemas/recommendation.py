@@ -56,6 +56,8 @@ class MealItemIn(BaseModel):
     fdc_id: int | None = None
     food_name: str
     quantity_g: float = 100.0
+    entered_quantity: float | None = None
+    entered_unit: str | None = None
     calories_kcal: float | None = None
     protein_g: float | None = None
     carbs_g: float | None = None
@@ -311,6 +313,8 @@ class FoodLogEntryIn(BaseModel):
     source: str = "manual"
     source_ref_id: str | None = None
     quantity_g: float
+    entered_quantity: float | None = None
+    entered_unit: str | None = None
     calories_kcal: float | None = None
     protein_g: float | None = None
     carbs_g: float | None = None
