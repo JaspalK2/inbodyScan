@@ -68,18 +68,6 @@ async def health_auth():
     return {"status": "ok", "service": "auth"}
 
 
-@app.get("/api/auth/debug-db")
-async def debug_db():
-    import traceback
-    from .db.session import _session_factory
-    from sqlalchemy import text
-    try:
-        async with _session_factory() as session:
-            result = await session.execute(text("SELECT 1"))
-            return {"db": "ok", "result": str(result.scalar())}
-    except Exception as e:
-        return {"db": "error", "error": str(e), "traceback": traceback.format_exc()}
-
 
 app.include_router(auth_router)
 app.include_router(admin_router)
