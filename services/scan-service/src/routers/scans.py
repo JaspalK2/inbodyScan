@@ -39,8 +39,15 @@ async def upload_scan(
             headers={"X-Error-Code": "duplicate_scan_date"},
         )
 
-    storage_path = upload_pdf(user_id, str(scan_date), pdf_bytes)
-    metrics_dict = extract_metrics(pdf_bytes)
+    import traceback as _tb
+    try:
+        storage_path = upload_pdf(user_id, str(scan_date), pdf_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"storage error: {e}\n{_tb.format_exc()}")
+    try:
+        metrics_dict = extract_metrics(pdf_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"extract error: {e}\n{_tb.format_exc()}")
 
     scan = await create_scan(session, user_id, scan_date, storage_path)
     metric_records = await save_metrics(session, scan.id, metrics_dict)
