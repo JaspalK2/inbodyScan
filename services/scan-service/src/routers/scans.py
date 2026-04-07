@@ -39,15 +39,12 @@ async def upload_scan(
             headers={"X-Error-Code": "duplicate_scan_date"},
         )
 
-    import traceback as _tb
-    try:
-        storage_path = upload_pdf(user_id, str(scan_date), pdf_bytes)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"storage error: {e}\n{_tb.format_exc()}")
     try:
         metrics_dict = extract_metrics(pdf_bytes)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"extract error: {e}\n{_tb.format_exc()}")
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"Could not parse PDF: {e}")
+
+    storage_path = upload_pdf(user_id, str(scan_date), pdf_bytes)
 
     scan = await create_scan(session, user_id, scan_date, storage_path)
     metric_records = await save_metrics(session, scan.id, metrics_dict)
