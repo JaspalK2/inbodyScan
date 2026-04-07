@@ -135,6 +135,17 @@ function _getMajors(name: string): string[] {
   return [...found];
 }
 
+function _parseAvgReps(reps: string | number | undefined): number {
+  if (typeof reps === "number") return reps;
+  if (!reps) return 10;
+  const s = String(reps);
+  if (s.toLowerCase().includes("min")) return 10; // cardio duration — neutral
+  const rangeMatch = s.match(/(\d+)\s*[-–]\s*(\d+)/);
+  if (rangeMatch) return (parseInt(rangeMatch[1]) + parseInt(rangeMatch[2])) / 2;
+  const single = parseInt(s);
+  return isNaN(single) ? 10 : single;
+}
+
 function computeWorkoutScore(plan: Record<string, unknown>): number {
   // Support both new {days:[...]} and legacy {weeks:[{days:[...]}]} formats
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -149,7 +160,11 @@ function computeWorkoutScore(plan: Record<string, unknown>): number {
     for (const ex of exercises) {
       const name = ex.name ?? ex.exercise_name ?? "";
       const sets = parseInt(String(ex.sets ?? 3)) || 3;
-      _getMajors(name).forEach((g) => { weekly[g] = (weekly[g] ?? 0) + sets; });
+      // Factor in reps: more reps = slightly higher effective volume
+      const avgReps = _parseAvgReps(ex.reps);
+      const repsFactor = Math.min(Math.max(avgReps / 10, 0.6), 1.5);
+      const effectiveSets = sets * repsFactor;
+      _getMajors(name).forEach((g) => { weekly[g] = (weekly[g] ?? 0) + effectiveSets; });
     }
   }
   void trainingDays;

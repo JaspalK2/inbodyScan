@@ -8,7 +8,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const emptyStringToUndefined = z.preprocess((v) => (v === "" ? undefined : v), z.string().optional());
@@ -76,20 +76,57 @@ export default function ProfilePage() {
 
   const setGoal = useMutation({
     mutationFn: (g: string) => userApi.setGoal(g),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["goal"] }); setGoalError(null); },
-    onError: () => setGoalError("Failed to save goal. Please try again."),
+    onMutate: async (goalType) => {
+      await qc.cancelQueries({ queryKey: ["goal"] });
+      const previous = qc.getQueryData(["goal"]);
+      qc.setQueryData(["goal"], (old: { id: string; user_id: string; goal_type: string } | undefined) =>
+        old ? { ...old, goal_type: goalType } : { id: "optimistic", user_id: "", goal_type: goalType }
+      );
+      setGoalError(null);
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      qc.setQueryData(["goal"], ctx?.previous);
+      setGoalError("Failed to save goal. Please try again.");
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["goal"] }),
   });
 
   const addRestriction = useMutation({
     mutationFn: (r: string) => userApi.addRestriction(r),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["restrictions"] }); setRestrictionError(null); },
-    onError: () => setRestrictionError("Failed to update dietary restriction. Please try again."),
+    onMutate: async (restrictionType) => {
+      await qc.cancelQueries({ queryKey: ["restrictions"] });
+      const previous = qc.getQueryData(["restrictions"]);
+      qc.setQueryData(["restrictions"], (old: DietaryRestriction[] | undefined) => [
+        ...(old ?? []),
+        { id: "optimistic-" + Date.now(), user_id: "", restriction_type: restrictionType, notes: null },
+      ]);
+      setRestrictionError(null);
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      qc.setQueryData(["restrictions"], ctx?.previous);
+      setRestrictionError("Failed to update dietary restriction. Please try again.");
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["restrictions"] }),
   });
 
   const removeRestriction = useMutation({
     mutationFn: (id: string) => userApi.removeRestriction(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["restrictions"] }); setRestrictionError(null); },
-    onError: () => setRestrictionError("Failed to remove dietary restriction. Please try again."),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: ["restrictions"] });
+      const previous = qc.getQueryData(["restrictions"]);
+      qc.setQueryData(["restrictions"], (old: DietaryRestriction[] | undefined) =>
+        (old ?? []).filter((r) => r.id !== id)
+      );
+      setRestrictionError(null);
+      return { previous };
+    },
+    onError: (_err, _vars, ctx) => {
+      qc.setQueryData(["restrictions"], ctx?.previous);
+      setRestrictionError("Failed to remove dietary restriction. Please try again.");
+    },
+    onSettled: () => qc.invalidateQueries({ queryKey: ["restrictions"] }),
   });
 
   const activeRestrictionTypes = (restrictions ?? []).map(r => r.restriction_type);
@@ -161,13 +198,17 @@ export default function ProfilePage() {
 
       {/* Health Goal */}
       <div className="glass-card p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-foreground">Health Goal</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground">Health Goal</h2>
+          {setGoal.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+        </div>
         <div className="flex flex-wrap gap-2">
           {GOAL_OPTIONS.map(g => (
             <button
               key={g.value}
               onClick={() => setGoal.mutate(g.value)}
-              className={`rounded-full px-4 py-1.5 text-sm border transition-all ${
+              disabled={setGoal.isPending}
+              className={`rounded-full px-4 py-1.5 text-sm border transition-all disabled:opacity-70 ${
                 goal?.goal_type === g.value
                   ? "bg-purple-500/20 border-purple-500/50 text-purple-300"
                   : "border-white/10 text-muted-foreground hover:border-white/30 hover:text-foreground"
@@ -182,7 +223,10 @@ export default function ProfilePage() {
 
       {/* Dietary Restrictions */}
       <div className="glass-card p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-foreground">Dietary Restrictions</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground">Dietary Restrictions</h2>
+          {(addRestriction.isPending || removeRestriction.isPending) && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+        </div>
         <div className="flex flex-wrap gap-2">
           {RESTRICTION_OPTIONS.map(r => {
             const active = activeRestrictionTypes.includes(r);
