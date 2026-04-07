@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     await _engine.dispose()
 
 
-app = FastAPI(title="Scan Service", version="1.0.0", lifespan=lifespan)
+app = FastAPI(redirect_slashes=False, title="Scan Service", version="1.0.0", lifespan=lifespan)
 
 allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(

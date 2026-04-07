@@ -8,7 +8,7 @@ from mangum import Mangum
 
 from .routers.admin import router as admin_router
 
-app = FastAPI(title="Admin Service", version="1.0.0")
+app = FastAPI(redirect_slashes=False, title="Admin Service", version="1.0.0")
 
 allowed_origins = os.environ.get("ALLOWED_ORIGINS", "http://localhost:3000").split(",")
 app.add_middleware(
