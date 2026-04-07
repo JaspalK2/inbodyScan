@@ -1132,6 +1132,33 @@ function FoodMealsTab() {
                     qc.invalidateQueries({ queryKey: ["day-plans"] });
                   };
                   deleteAll();
+                }} onLogMeal={(entry) => {
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  const items: any[] = Array.isArray(entry.items_snapshot) ? entry.items_snapshot : [];
+                  const logEntries = items.length > 0
+                    ? items.map((item) => ({
+                        food_name: item.food_name ?? entry.meal_slot,
+                        source: "saved_meal" as const,
+                        source_ref_id: entry.custom_meal_id ?? undefined,
+                        quantity_g: item.grams ?? item.quantity_g ?? 100,
+                        calories_kcal: item.calories ?? item.calories_kcal ?? null,
+                        protein_g: item.protein_g ?? null,
+                        carbs_g: item.carbs_g ?? null,
+                        fat_g: item.fat_g ?? null,
+                        fiber_g: item.fiber_g ?? null,
+                      }))
+                    : [{
+                        food_name: entry.custom_meal_name ?? entry.meal_slot,
+                        source: "saved_meal" as const,
+                        source_ref_id: entry.custom_meal_id ?? undefined,
+                        quantity_g: 100,
+                        calories_kcal: entry.calories_kcal ?? null,
+                        protein_g: entry.protein_g ?? null,
+                        carbs_g: entry.carbs_g ?? null,
+                        fat_g: entry.fat_g ?? null,
+                        fiber_g: entry.fiber_g ?? null,
+                      }];
+                  createLogMutation.mutate({ log_date: logDate, entries: logEntries });
                 }} />
               </div>
             )}
@@ -1374,7 +1401,7 @@ function DayPlanCard({ plan, onDelete, onApply }: { plan: DayPlanOut; onDelete: 
 
 // ─── Generated Plans List (grouped by recommendation ID) ─────────────────────
 
-function GeneratedPlansList({ dayPlans, onDeleteGroup }: { dayPlans: DayPlanOut[]; onDeleteGroup: (ids: string[]) => void }) {
+function GeneratedPlansList({ dayPlans, onDeleteGroup, onLogMeal }: { dayPlans: DayPlanOut[]; onDeleteGroup: (ids: string[]) => void; onLogMeal: (entry: DayPlanOut["entries"][number]) => void }) {
   // Group by notes (recommendation_id). Plans without notes go into "__manual__".
   const groups = new Map<string, DayPlanOut[]>();
   for (const plan of dayPlans) {
@@ -1415,6 +1442,7 @@ function GeneratedPlansList({ dayPlans, onDeleteGroup }: { dayPlans: DayPlanOut[
             days={sorted}
             totalCalPerDay={totalCal}
             onDelete={() => onDeleteGroup(plans.map((p) => p.id))}
+            onLogMeal={onLogMeal}
           />
         );
       })}
@@ -1422,11 +1450,12 @@ function GeneratedPlansList({ dayPlans, onDeleteGroup }: { dayPlans: DayPlanOut[
   );
 }
 
-function GeneratedPlanBlock({ label, days, totalCalPerDay, onDelete }: {
+function GeneratedPlanBlock({ label, days, totalCalPerDay, onDelete, onLogMeal }: {
   label: string;
   days: DayPlanOut[];
   totalCalPerDay: number;
   onDelete: () => void;
+  onLogMeal: (entry: DayPlanOut["entries"][number]) => void;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -1443,14 +1472,14 @@ function GeneratedPlanBlock({ label, days, totalCalPerDay, onDelete }: {
       </div>
       {open && (
         <div className="border-t border-white/10">
-          {days.map((plan) => <GeneratedDayRow key={plan.id} plan={plan} />)}
+          {days.map((plan) => <GeneratedDayRow key={plan.id} plan={plan} onLogMeal={onLogMeal} />)}
         </div>
       )}
     </div>
   );
 }
 
-function GeneratedDayRow({ plan }: { plan: DayPlanOut }) {
+function GeneratedDayRow({ plan, onLogMeal }: { plan: DayPlanOut; onLogMeal: (entry: DayPlanOut["entries"][number]) => void }) {
   const [open, setOpen] = useState(false);
   const dayNum = plan.name.match(/\(Day (\d+)\)/)?.[1] ?? "?";
   const dayTotals = plan.entries.reduce(
@@ -1477,7 +1506,7 @@ function GeneratedDayRow({ plan }: { plan: DayPlanOut }) {
       {open && (
         <div className="px-4 pb-3 space-y-2">
           {plan.entries.map((entry, i) => (
-            <GeneratedMealRow key={i} entry={entry} />
+            <GeneratedMealRow key={i} entry={entry} onLog={() => onLogMeal(entry)} />
           ))}
         </div>
       )}
@@ -1485,7 +1514,7 @@ function GeneratedDayRow({ plan }: { plan: DayPlanOut }) {
   );
 }
 
-function GeneratedMealRow({ entry }: { entry: DayPlanOut["entries"][number] }) {
+function GeneratedMealRow({ entry, onLog }: { entry: DayPlanOut["entries"][number]; onLog: () => void }) {
   const [open, setOpen] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const items: any[] = Array.isArray(entry.items_snapshot) ? entry.items_snapshot : [];
@@ -1498,6 +1527,7 @@ function GeneratedMealRow({ entry }: { entry: DayPlanOut["entries"][number] }) {
           <span>P {fmt(entry.protein_g)}g</span>
           <span>C {fmt(entry.carbs_g)}g</span>
           <span>F {fmt(entry.fat_g)}g</span>
+          <button type="button" onClick={(e) => { e.stopPropagation(); onLog(); }} className="text-purple-400 hover:text-purple-300 p-0.5" title="Log to Today"><BookmarkPlus className="h-3 w-3" /></button>
           {items.length > 0 && (open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
         </div>
       </div>
