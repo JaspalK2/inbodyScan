@@ -16,13 +16,16 @@ from .models import profile, health_goal, dietary_restriction  # noqa: F401
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with _engine.begin() as conn:
-        # Create tables that don't exist yet
-        await conn.run_sync(Base.metadata.create_all)
-        # Ensure activity_level column exists (additive migration for existing tables)
-        await conn.execute(text(
-            "ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS activity_level VARCHAR(30)"
-        ))
+    try:
+        async with _engine.begin() as conn:
+            # Create tables that don't exist yet
+            await conn.run_sync(Base.metadata.create_all)
+            # Ensure activity_level column exists (additive migration for existing tables)
+            await conn.execute(text(
+                "ALTER TABLE user_profiles ADD COLUMN IF NOT EXISTS activity_level VARCHAR(30)"
+            ))
+    except Exception:
+        pass  # DB may not be reachable at startup on cold boot; queries will fail naturally
     yield
     await _engine.dispose()
 
