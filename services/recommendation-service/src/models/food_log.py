@@ -17,6 +17,8 @@ class DailyFoodLogEntry(Base):
     source: Mapped[str] = mapped_column(String(50), nullable=False, default="manual")
     source_ref_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     quantity_g: Mapped[float] = mapped_column(Float, nullable=False)
+    entered_quantity: Mapped[float | None] = mapped_column(Float, nullable=True)
+    entered_unit: Mapped[str | None] = mapped_column(String(10), nullable=True)
     calories_kcal: Mapped[float | None] = mapped_column(Float, nullable=True)
     protein_g: Mapped[float | None] = mapped_column(Float, nullable=True)
     carbs_g: Mapped[float | None] = mapped_column(Float, nullable=True)

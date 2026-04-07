@@ -10,6 +10,7 @@ import {
   type SplitDay, type Exercise, type FoodLogEntryOut, type ExerciseSearchResult,
 } from "@/lib/api";
 import { normaliseMeal, type NormalisedMeal } from "@/lib/meal-normaliser";
+import { UNITS, convertToGrams, type UnitSymbol } from "@/lib/unit-conversions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -854,6 +855,7 @@ function FoodMealsTab() {
   const [debouncedQ, setDebouncedQ] = useState("");
   const [addingFood, setAddingFood] = useState<FoodResult | null>(null);
   const [addQty, setAddQty] = useState(100);
+  const [addUnit, setAddUnit] = useState<UnitSymbol>("g");
   const [builderItems, setBuilderItems] = useState<BuilderItem[]>([]);
   const [mealName, setMealName] = useState("");
   const [savingMeal, setSavingMeal] = useState(false);
@@ -949,7 +951,7 @@ function FoodMealsTab() {
                 <div key={entry.id} className="flex items-center justify-between gap-2 rounded bg-white/5 px-2 py-1.5">
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-foreground truncate">{entry.food_name}{entry.brand ? ` · ${entry.brand}` : ""}</p>
-                    <p className="text-xs text-muted-foreground">{entry.quantity_g}g · {(entry.calories_kcal ?? 0).toFixed(0)} kcal · P {(entry.protein_g ?? 0).toFixed(1)}g</p>
+                    <p className="text-xs text-muted-foreground">{entry.entered_unit && entry.entered_unit !== "g" && entry.entered_quantity != null ? `${entry.entered_quantity} ${entry.entered_unit} (${fmt(entry.quantity_g, 1)}g)` : `${fmt(entry.quantity_g, 1)}g`} · {(entry.calories_kcal ?? 0).toFixed(0)} kcal · P {(entry.protein_g ?? 0).toFixed(1)}g</p>
                   </div>
                   <button onClick={() => deleteLogMutation.mutate(entry.id)} className="text-muted-foreground hover:text-red-400 shrink-0">
                     <X className="h-3 w-3" />
@@ -1009,28 +1011,42 @@ function FoodMealsTab() {
                   {addingFood?.fdc_id === food.fdc_id && (
                     <div className="mt-2 p-3 rounded-lg bg-white/5 border border-white/10 space-y-2">
                       <div className="flex items-center gap-2">
-                        <Label className="text-xs text-muted-foreground w-20">Quantity (g)</Label>
-                        <Input type="number" value={addQty} onChange={(e) => setAddQty(Number(e.target.value))} className="h-7 w-24 bg-white/10 border-white/10 text-foreground text-xs" />
+                        <Label className="text-xs text-muted-foreground w-20">Quantity</Label>
+                        <Input type="number" min={0.01} value={addQty} onChange={(e) => setAddQty(Number(e.target.value))} className="h-7 w-20 bg-white/10 border-white/10 text-foreground text-xs" />
+                        <select value={addUnit} onChange={(e) => setAddUnit(e.target.value as UnitSymbol)} className="h-7 bg-white/10 border border-white/10 rounded text-xs text-foreground px-1">
+                          {UNITS.map((u) => <option key={u.symbol} value={u.symbol}>{u.label}</option>)}
+                        </select>
                       </div>
-                      {(() => { const s = scaleMacros({ ...food, quantity_g: 100, food_name: food.name } as MealItem, addQty); return (
-                        <div className="flex gap-2 text-xs flex-wrap">
-                          <span className="text-purple-300">{fmt(s.calories_kcal, 0)} kcal</span>
-                          <span className="text-cyan-300">P {fmt(s.protein_g)}g</span>
-                          <span className="text-amber-300">C {fmt(s.carbs_g)}g</span>
-                          <span className="text-pink-300">F {fmt(s.fat_g)}g</span>
-                        </div>
-                      ); })()}
+                      {addQty <= 0 && <p className="text-xs text-red-400">Quantity must be greater than 0</p>}
+                      {(() => {
+                        const grams = convertToGrams(addQty, addUnit, food.serving_size ?? undefined);
+                        const s = scaleMacros({ ...food, quantity_g: 100, food_name: food.name } as MealItem, grams);
+                        return (
+                          <div className="flex gap-2 text-xs flex-wrap">
+                            <span className="text-muted-foreground">{fmt(grams, 1)}g ·</span>
+                            <span className="text-purple-300">{fmt(s.calories_kcal, 0)} kcal</span>
+                            <span className="text-cyan-300">P {fmt(s.protein_g)}g</span>
+                            <span className="text-amber-300">C {fmt(s.carbs_g)}g</span>
+                            <span className="text-pink-300">F {fmt(s.fat_g)}g</span>
+                          </div>
+                        );
+                      })()}
                       <div className="flex gap-2 flex-wrap">
-                        <Button size="sm" className="h-7 text-xs btn-primary-glass" onClick={() => {
-                          setBuilderItems((prev) => [...prev, { _id: `${Date.now()}`, fdc_id: food.fdc_id, food_name: food.name, quantity_g: addQty, calories_kcal: food.calories_kcal, protein_g: food.protein_g, carbs_g: food.carbs_g, fat_g: food.fat_g, fiber_g: food.fiber_g }]);
+                        <Button size="sm" className="h-7 text-xs btn-primary-glass" disabled={addQty <= 0} onClick={() => {
+                          const grams = convertToGrams(addQty, addUnit, food.serving_size ?? undefined);
+                          const s = scaleMacros({ ...food, quantity_g: 100, food_name: food.name } as MealItem, grams);
+                          setBuilderItems((prev) => [...prev, { _id: `${Date.now()}`, fdc_id: food.fdc_id, food_name: food.name, quantity_g: grams, entered_quantity: addQty, entered_unit: addUnit, calories_kcal: s.calories_kcal, protein_g: s.protein_g, carbs_g: s.carbs_g, fat_g: s.fat_g, fiber_g: s.fiber_g }]);
                           setAddingFood(null);
+                          setAddUnit("g");
                         }}>Add to Meal</Button>
-                        <Button size="sm" variant="outline" className="h-7 text-xs border-purple-500/30 text-purple-300 hover:bg-purple-500/10" onClick={() => {
-                          const s = scaleMacros({ ...food, quantity_g: 100, food_name: food.name } as MealItem, addQty);
-                          createLogMutation.mutate({ log_date: logDate, entries: [{ fdc_id: food.fdc_id, food_name: food.name, brand: food.brand ?? null, source: "manual", quantity_g: addQty, calories_kcal: s.calories_kcal, protein_g: s.protein_g, carbs_g: s.carbs_g, fat_g: s.fat_g, fiber_g: s.fiber_g }] });
+                        <Button size="sm" variant="outline" className="h-7 text-xs border-purple-500/30 text-purple-300 hover:bg-purple-500/10" disabled={addQty <= 0} onClick={() => {
+                          const grams = convertToGrams(addQty, addUnit, food.serving_size ?? undefined);
+                          const s = scaleMacros({ ...food, quantity_g: 100, food_name: food.name } as MealItem, grams);
+                          createLogMutation.mutate({ log_date: logDate, entries: [{ fdc_id: food.fdc_id, food_name: food.name, brand: food.brand ?? null, source: "manual", quantity_g: grams, entered_quantity: addQty, entered_unit: addUnit, calories_kcal: s.calories_kcal, protein_g: s.protein_g, carbs_g: s.carbs_g, fat_g: s.fat_g, fiber_g: s.fiber_g }] });
                           setAddingFood(null);
+                          setAddUnit("g");
                         }}><BookmarkPlus className="h-3 w-3 mr-1" />Add to Today</Button>
-                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setAddingFood(null)}>Cancel</Button>
+                        <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setAddingFood(null); setAddUnit("g"); }}>Cancel</Button>
                       </div>
                     </div>
                   )}
@@ -1208,7 +1224,7 @@ function SavedMealCard({ meal, onDelete, onLogToday }: { meal: CustomMealOut; on
             const s = scaleMacros({ ...item, food_name: item.food_name ?? "", quantity_g: item.quantity_g ?? 100 }, item.quantity_g ?? 100);
             return (
               <div key={i} className="flex justify-between text-xs rounded bg-white/5 px-2 py-1">
-                <span className="text-foreground">{item.food_name} <span className="text-muted-foreground">({item.quantity_g}g)</span></span>
+                <span className="text-foreground">{item.food_name} <span className="text-muted-foreground">({item.entered_unit && item.entered_unit !== "g" && item.entered_quantity != null ? `${item.entered_quantity} ${item.entered_unit} · ` : ""}{fmt(item.quantity_g ?? 100, 1)}g)</span></span>
                 <span className="text-muted-foreground">{fmt(s.calories_kcal, 0)} kcal · P {fmt(s.protein_g)}g</span>
               </div>
             );

@@ -201,7 +201,7 @@ export interface DashboardResponse { user_id: string; latest_scan_date: string |
 export interface MacroTargets { calories: number; protein_g: number; carbs_g: number; fat_g: number; fiber_g: number; bmr: number; tdee: number; goal_adjustment_kcal: number; protein_ratio: string; notes: string; }
 export interface ExerciseSearchResult { name: string; primary_muscles: string[]; secondary_muscles: string[]; category: string; equipment: string; level: string; }
 export interface FoodResult { fdc_id: number; name: string; brand: string | null; category: string | null; calories_kcal: number | null; protein_g: number | null; carbs_g: number | null; fat_g: number | null; fiber_g: number | null; sugar_g: number | null; sodium_mg: number | null; potassium_mg: number | null; calcium_mg: number | null; iron_mg: number | null; vitamin_c_mg: number | null; vitamin_d_ug: number | null; serving_size: number | null; serving_unit: string | null; }
-export interface MealItem { id?: string; fdc_id?: number | null; food_name: string; quantity_g: number; calories_kcal?: number | null; protein_g?: number | null; carbs_g?: number | null; fat_g?: number | null; fiber_g?: number | null; sodium_mg?: number | null; }
+export interface MealItem { id?: string; fdc_id?: number | null; food_name: string; quantity_g: number; entered_quantity?: number | null; entered_unit?: string | null; calories_kcal?: number | null; protein_g?: number | null; carbs_g?: number | null; fat_g?: number | null; fiber_g?: number | null; sodium_mg?: number | null; }
 export interface CustomMealOut { id: string; user_id: string; name: string; description: string | null; items: MealItem[]; created_at: string; updated_at: string; }
 export interface CustomMealCreate { name: string; description?: string; items: MealItem[]; }
 export interface DayPlanEntry { id?: string; meal_slot: string; custom_meal_id?: string | null; custom_meal_name?: string | null; calories_kcal?: number | null; protein_g?: number | null; carbs_g?: number | null; fat_g?: number | null; fiber_g?: number | null; items_snapshot?: MealItem[] | null; }
@@ -223,6 +223,8 @@ export interface FoodLogEntryIn {
   source?: string;
   source_ref_id?: string | null;
   quantity_g: number;
+  entered_quantity?: number | null;
+  entered_unit?: string | null;
   calories_kcal?: number | null;
   protein_g?: number | null;
   carbs_g?: number | null;
